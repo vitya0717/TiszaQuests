@@ -1,0 +1,30 @@
+quests:
+  #Az ID ne tartalmazzon ékezetet vagy ne kezdődjön számmal és ne legyen szóköz!
+  miner1:
+    #Bármilyen neve lehet
+    name: Iron_Miner
+    #Küldetés engedélyezés a szerveren, true = igen, false = nem
+    enable: true
+    #Újra ismételhető küldetés, - '' -
+    repeatable: false
+    #MINING, GATHER_ITEMS, KILL_PLAYERS, KILL_MOBS, CRAFT_ITEM, PLACE_BLOCKS, BREED_ANIMALS
+    questType: MINING
+    #Mit kell teljesíteni a küldetés során
+    objective:
+      block: IRON_ORE
+      count: 5
+    #Leírás bármennyi sort tartalmazhat
+    #Maximum nem látszódik majd, mert kimegy a képernyőről xd
+    description: "Ez egy alap leírás"
+    #Ez az item jelenik meg a '/quests' parancs használata után
+    displayItem:
+      #Csak nagybetűs és pontis tárgyat fogad el, a szerveren mind1 a nagy és kisbetű!
+      type: DIAMOND
+      displayName: '&bBányász'
+      lore:
+        - ''
+        - '&6Feladat: &e%current_quest_objective_miner1%'
+    rewards:
+      - '[money] 1500'
+      - '[points] 1'
+      - '[items] [{stone:64},{steak:64}]'

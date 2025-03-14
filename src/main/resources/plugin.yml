@@ -1,0 +1,7 @@
+name: TiszaQuests
+version: '1.0-SNAPSHOT'
+main: org.vitya0717.tiszaQuests.main.Main
+api-version: '1.21'
+commands:
+  quests:
+
