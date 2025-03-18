@@ -14,4 +14,6 @@ public class Text {
     public static final String CREATE_QUEST = "%prefix% &6Sikeresen létrehoztad a &f'%current_quest%' &6küldetést.";
     public static final String QUEST_DISPLAY_ITEM_EMPTY = "%prefix% &cAdd meg a tárgyat, ami megjelenik a menüben!";
     public static final String QUEST_DISPLAY_ITEM_WRONG = "%prefix% &cÉrvényes tárgyat adj meg!";
+    public static final String QUEST_ACCEPT = "%prefix% &aSikeresen felvetted a &7%quest_name% &aküldetést!";
+    public static final String ALREADY_ACCEPTED_QUEST = "%prefix% &cMár elkezdted ezt a küldetést!";
 }

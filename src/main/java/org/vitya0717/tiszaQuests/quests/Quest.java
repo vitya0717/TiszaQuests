@@ -5,29 +5,31 @@ import org.vitya0717.tiszaQuests.quests.objectives.Objective;
 
 import java.util.List;
 
-public class Quest {
+public class Quest implements Cloneable {
 
     private String id;
     private String name;
-    private String description;
+    private List<String> description;
     private ItemStack displayItem;
     private QuestType type;
-    private Objective objectives;
+    private Objective objective;
     private List<String> rewards;
     private boolean repeatable;
     private boolean active;
+    private int questItemSlot;
 
 
-    public Quest(String id, String name, String description, ItemStack displayItem, QuestType type, Objective objectives, List<String> rewards, boolean repeatable, boolean active) {
+    public Quest(String id, String name, List<String> description, ItemStack displayItem,int questItemSlot, QuestType type, Objective objective, List<String> rewards, boolean repeatable, boolean active) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.displayItem = displayItem;
         this.type = type;
-        this.objectives = objectives;
+        this.objective = objective;
         this.rewards = rewards;
         this.repeatable = repeatable;
         this.active = active;
+        this.questItemSlot = questItemSlot;
     }
 
     public String getId() {
@@ -46,11 +48,11 @@ public class Quest {
         this.name = name;
     }
 
-    public String getDescription() {
+    public List<String> getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(List<String> description) {
         this.description = description;
     }
 
@@ -92,5 +94,46 @@ public class Quest {
 
     public void setDisplayItem(ItemStack displayItem) {
         this.displayItem = displayItem;
+    }
+
+    public int getQuestItemSlot() {
+        return questItemSlot;
+    }
+
+    public void setQuestItemSlot(int questItemSlot) {
+        this.questItemSlot = questItemSlot;
+    }
+
+    public Objective getObjective() {
+        return objective;
+    }
+
+    public void setObjective(Objective objective) {
+        this.objective = objective;
+    }
+
+    @Override
+    public String toString() {
+        return "Quest{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", description=" + description +
+                ", displayItem=" + displayItem.getType() +
+                ", type=" + type +
+                ", objective=" + objective +
+                ", rewards=" + rewards +
+                ", repeatable=" + repeatable +
+                ", active=" + active +
+                ", questItemSlot=" + questItemSlot +
+                '}';
+    }
+
+    @Override
+    public Quest clone() {
+        try {
+            return (Quest) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }
