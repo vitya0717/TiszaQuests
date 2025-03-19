@@ -1,4 +1,6 @@
-package org.vitya0717.tiszaQuests.quests;
+package org.vitya0717.tiszaQuests.quests.playerProfile;
+
+import org.vitya0717.tiszaQuests.quests.Quest;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,8 +1,8 @@
 package org.vitya0717.tiszaQuests.quests.objectives;
 
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.vitya0717.tiszaQuests.quests.Quest;
 
 public class Mining extends Objective {
 
@@ -10,12 +10,17 @@ public class Mining extends Objective {
 
     private int count;
 
-    public Mining(String questId, Material blockType, int count) {
-        super(questId, blockType, count);
+    public Mining(String objectiveId ,String questId, Material blockType, ObjectiveType type, int count) {
+        super(objectiveId, questId, blockType, type, count);
     }
 
     @Override
-    public void progress(Player player) {
+    public void progress(String objectiveId, Quest value, Player player) {
+
+    }
+
+    @Override
+    public void finish(String objectiveId, Quest value, Player player) {
 
     }
 

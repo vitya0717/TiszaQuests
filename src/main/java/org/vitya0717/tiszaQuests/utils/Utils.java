@@ -1,7 +1,6 @@
 package org.vitya0717.tiszaQuests.utils;
 
 import org.bukkit.ChatColor;
-import org.vitya0717.tiszaQuests.main.Main;
 import org.vitya0717.tiszaQuests.quests.Quest;
 
 import java.util.List;
@@ -11,16 +10,16 @@ public class Utils {
 
     private static String id;
 
-    public static String Placeholders(String s) {
+    public static String Placeholders(Quest quest, String s) {
         s = ChatColor.translateAlternateColorCodes('&', s);
         s = s.replace("%prefix%", Text.PREFIX);
-
-        Quest quest = Main.questManager.allQuests.get(id);
         
         if(quest != null) {
-            System.out.println("nem null");
-            s = s.replace("%quest_name_"+quest.getId()+"%", quest.getName());
-            s = s.replace("%quest_description_"+quest.getId()+"%", quest.getDescription());
+            s = s.replace("%quest_name%", quest.getName());
+            for (String key : quest.getObjectives().keySet()) {
+                s = s.replace("%quest_required_placed_blocks_"+key+"%", quest.getObjective(key).getRequiredBlocksCount()+"");
+                s = s.replace("%quest_placed_blocks_"+key+"%", quest.getObjective(key).getPlacedBlocksCount()+"");
+            }
         }
         return s;
     }

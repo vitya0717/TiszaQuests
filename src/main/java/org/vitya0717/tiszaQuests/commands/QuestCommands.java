@@ -12,6 +12,8 @@ import org.vitya0717.tiszaQuests.quests.Quest;
 import org.vitya0717.tiszaQuests.utils.Text;
 import org.vitya0717.tiszaQuests.utils.Utils;
 
+import java.util.Arrays;
+
 public class QuestCommands implements CommandExecutor {
 
     private Main instance;
@@ -69,9 +71,9 @@ public class QuestCommands implements CommandExecutor {
 
                     //=================================================
 
-                    Quest tempQuest = new Quest(questId, questName, "változtasd meg a leírást, /quests editor", new ItemStack(displayItem), null, null, null,false, true);
+                    Quest tempQuest = new Quest(questId, questName, Arrays.asList("&cTest", "&cdescription", "&cplease change it"), new ItemStack(displayItem), -1, null, null,false, true);
 
-                    Main.questManager.CreateQuest(tempQuest);
+                    Main.questManager.registerQuest(tempQuest);
                     Main.questManager.saveQuest(tempQuest);
 
                     sender.sendMessage(Utils.Colorize(Text.CREATE_QUEST));

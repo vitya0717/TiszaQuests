@@ -2,9 +2,8 @@ package org.vitya0717.tiszaQuests.quests;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -12,27 +11,30 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.vitya0717.tiszaQuests.main.Main;
 import org.vitya0717.tiszaQuests.quests.objectives.Objective;
+import org.vitya0717.tiszaQuests.quests.objectives.ObjectiveType;
 import org.vitya0717.tiszaQuests.quests.objectives.PlaceBlocks;
 import org.vitya0717.tiszaQuests.utils.Text;
 import org.vitya0717.tiszaQuests.utils.Utils;
 
 import java.util.*;
+import java.util.logging.Level;
 
 public class QuestManager {
 
     private final Main instance;
     public final HashMap<String, Quest> allQuests = new HashMap<>();
 
-    private final HashMap<UUID, Inventory> questInventories = new HashMap<>();
-    //public final HashMap<String, Utils> questUtils = new HashMap<>();
+    public final HashMap<UUID, Inventory> questInventories = new HashMap<>();
+    public String questInventoryTitle = Utils.Colorize(Text.GUI_TITLE);
 
     public QuestManager(Main instance) {
         this.instance = instance;
     }
 
-    public void CreateQuest(Quest quest) {
+    public void registerQuest(Quest quest) {
         if (allQuests.keySet().stream().noneMatch(s -> Objects.equals(s, quest.getId()))) {
             allQuests.put(quest.getId(), quest);
         }
@@ -45,7 +47,7 @@ public class QuestManager {
 
         if (player != null) {
             if (!questInventories.containsKey(player.getUniqueId())) {
-                questInventories.put(player.getUniqueId(), Bukkit.createInventory(null, rowSize * columnSize, Utils.Colorize(Text.GUI_TITLE)));
+                questInventories.put(player.getUniqueId(), Bukkit.createInventory(null, rowSize * columnSize, questInventoryTitle));
 
                 Inventory inventory = questInventories.get(player.getUniqueId());
 
@@ -70,20 +72,9 @@ public class QuestManager {
                         }
                     }
                 }
-                int startQuestsIndex = 10;
-
                 for (Map.Entry<String, Quest> questEntry : allQuests.entrySet()) {
                     Quest quest = questEntry.getValue();
-                    if (startQuestsIndex == 43) {
-                        System.out.println("Elfogytak a helyek");
-                        break;
-                    }
-                    if (inventory.getItem(startQuestsIndex) == null) {
-                        inventory.setItem(startQuestsIndex, quest.getDisplayItem());
-                        startQuestsIndex++;
-                    } else {
-                        startQuestsIndex += 2;
-                    }
+                    inventory.setItem(quest.getQuestItemSlot(), quest.getDisplayItem());
                 }
             }
             player.openInventory(questInventories.get(player.getUniqueId()));
@@ -95,11 +86,19 @@ public class QuestManager {
     public void saveQuest(Quest quest) {
         Main.questConfig.getConfig().set("quests." + quest.getId(), null);
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".name", (String) quest.getName());
+        Main.questConfig.getConfig().set("quests." + quest.getId() + ".displayItem", quest.getDisplayItem().getType().name());
+        Main.questConfig.getConfig().set("quests." + quest.getId() + ".displaySlot", quest.getQuestItemSlot());
+        Main.questConfig.getConfig().set("quests." + quest.getId() + ".questType", "QUEST_TYPE");
+        Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective", null);
+        if (quest.getObjectives() != null) {
+            for (Map.Entry<String, Objective> obj : quest.getObjectives().entrySet()) {
+                Objective objective = obj.getValue();
+                Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective.block", objective.getBlockType().name());
+                Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective.count", objective.getRequiredBlocksCount());
+            }
+        }
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".description", quest.getDescription());
-        Main.questConfig.getConfig().set("quests." + quest.getId() + ".displayItem", null);
-        Main.questConfig.getConfig().set("quests." + quest.getId() + ".displayItem.type", quest.getDisplayItem().getType().name());
-        Main.questConfig.getConfig().set("quests." + quest.getId() + ".displayItem.displayName", quest.getName());
-        Main.questConfig.getConfig().set("quests." + quest.getId() + ".displayItem.lore", Arrays.asList("Ez egy alap lore", "változtasd meg."));
+        Main.questConfig.getConfig().set("quests." + quest.getId() + ".rewards", quest.getRewards());
         Main.questConfig.saveConfig();
     }
 
@@ -115,29 +114,51 @@ public class QuestManager {
                 String name = config.getString("quests." + id + ".name");
                 boolean enable = config.getBoolean("quests." + id + ".enable");
                 boolean repeate = config.getBoolean("quests." + id + ".repeatable");
-                QuestType type = QuestType.valueOf(config.getString("quests." + id + ".questType"));
-                Objective obj = null;
-                switch (type) {
-                    case PLACE_BLOCKS:
-                        Material block = Material.getMaterial(Objects.requireNonNull(config.getString("quests." + id + ".objective.block")));
-                        if (block == null) {
-                            System.out.println("Hibás blokk betöltés!");
-                            return;
-                        }
-                        int count = config.getInt("quests." + id + ".objective.count");
-                        obj = new PlaceBlocks(id, block, count);
-                        break;
+                int slot = config.getInt("quests." + id + ".displaySlot");
+                ConfigurationSection objSection = config.getConfigurationSection("quests." + id + ".objectives");
+                if (objSection == null) {
+                    Bukkit.getLogger().log(Level.CONFIG, "Hibás küldetés objektív beállítás");
+                    return;
                 }
-                String description = config.getString("quests." + id + ".description");
-                ItemStack displayItem = new ItemStack(Objects.requireNonNull(Material.getMaterial(Objects.requireNonNull(config.getString("quests." + id + ".displayItem.type")))));
+                Objective obj = null;
+                HashMap<String, Objective> objectiveList = new HashMap<>();
+                for (String objKey : objSection.getKeys(false)) {
+                    ObjectiveType type = ObjectiveType.valueOf(config.getString("quests." + id + ".objectives." + objKey + ".type"));
+                    switch (type) {
+                        case PLACE_BLOCKS:
+                            Material block = Material.getMaterial(Objects.requireNonNull(config.getString("quests." + id + ".objectives." + objKey + ".block")));
+                            if (block == null) {
+                                System.out.println("Hibás blokk betöltés!");
+                                return;
+                            }
+                            int count = config.getInt("quests." + id + ".objectives." + objKey + ".count");
+                            obj = new PlaceBlocks(objKey, id, block, ObjectiveType.PLACE_BLOCKS, count);
+                            objectiveList.put(obj.getObjectiveId(), obj);
+                            break;
+                    }
+                }
+
+                List<String> description = config.getStringList("quests." + id + ".description");
+                ItemStack displayItem = new ItemStack(Objects.requireNonNull(Material.getMaterial(Objects.requireNonNull(config.getString("quests." + id + ".displayItem")))));
                 ItemMeta itemMeta = displayItem.getItemMeta();
-                itemMeta.setDisplayName(Utils.Placeholders(config.getString("quests." + id + ".displayItem.displayName")));
-                itemMeta.setLore((Utils.Placeholders(config.getStringList("quests." + id + ".displayItem.lore"))));
+
+                NamespacedKey questID = new NamespacedKey(instance, "questId");
+
+                assert itemMeta != null;
+
+                itemMeta.getPersistentDataContainer().set(questID, PersistentDataType.STRING, id);
+
+                itemMeta.setDisplayName(Utils.Placeholders(null, name));
+                itemMeta.setLore((Utils.Placeholders(description)));
                 displayItem.setItemMeta(itemMeta);
 
-                Quest temp = new Quest(id, name, description, displayItem, type, obj, null, repeate, enable);
+                assert obj != null;
 
-                CreateQuest(temp);
+                Quest temp = new Quest(id, name, description, displayItem, slot, objectiveList, null, repeate, enable);
+
+                System.out.println(temp.toString());
+
+                registerQuest(temp);
             }
         } catch (Exception ex) {
             ex.printStackTrace();

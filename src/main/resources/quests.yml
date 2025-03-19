@@ -1,29 +1,42 @@
 quests:
-  #Az ID ne tartalmazzon ékezetet vagy ne kezdődjön számmal és ne legyen szóköz!
-  miner1:
-    #Bármilyen neve lehet
-    name: Iron_Miner
-    #Küldetés engedélyezés a szerveren, true = igen, false = nem
+  # Az ID ne tartalmazzon ékezetet vagy ne kezdődjön számmal és ne legyen szóköz!
+  builder1:
+    # Bármilyen neve lehet
+    name: '&5Az építész'
+    # Küldetés engedélyezés a szerveren, true = igen, false = nem
     enable: true
-    #Újra ismételhető küldetés, - '' -
+    # Újra ismételhető küldetés, - '' -
     repeatable: false
-    #MINING, GATHER_ITEMS, KILL_PLAYERS, KILL_MOBS, CRAFT_ITEM, PLACE_BLOCKS, BREED_ANIMALS
-    questType: MINING
-    #Mit kell teljesíteni a küldetés során
-    objective:
-      block: IRON_ORE
-      count: 5
-    #Leírás bármennyi sort tartalmazhat
-    #Maximum nem látszódik majd, mert kimegy a képernyőről xd
-    description: "Ez egy alap leírás"
-    #Ez az item jelenik meg a '/quests' parancs használata után
-    displayItem:
-      #Csak nagybetűs és pontis tárgyat fogad el, a szerveren mind1 a nagy és kisbetű!
-      type: DIAMOND
-      displayName: '&bBányász'
-      lore:
-        - ''
-        - '&6Feladat: &e%current_quest_objective_miner1%'
+    # Ez az item jelenik meg a '/quests' parancs használata után
+    displayItem: DIAMOND_SWORD
+    # A küldetés menüben a meegadott sloton fog megjelenni a tárgy
+    displaySlot: 11
+    # MINING, GATHER_ITEMS, KILL_PLAYERS, KILL_MOBS, CRAFT_ITEM, PLACE_BLOCKS, BREED_ANIMALS
+    questType: PLACE_BLOCKS
+    # Mit kell teljesíteni a küldetés során
+    objectives:
+      1:
+        type: PLACE_BLOCKS
+        block: STONE
+        count: 5
+      2:
+        type: PLACE_BLOCKS
+        block: DIAMOND_BLOCK
+        count: 5
+    # Leírás bármennyi sort tartalmazhat
+    # Maximum nem látszódik majd, mert kimegy a képernyőről xd
+    description:
+      - ''
+      - '&7Feladat &8»'
+      - '&7- &eRakj le &f5 &ekövet'
+      - ''
+      - ''
+      - '&7Jutalom &8»'
+      - '&7- &e1500$'
+      - '&7- &e1 quest pont'
+      - '&7- &e64 kő'
+      - '&7- &e64 steak'
+      - ''
     rewards:
       - '[money] 1500'
       - '[points] 1'
