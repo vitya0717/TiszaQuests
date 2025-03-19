@@ -71,7 +71,7 @@ public class QuestCommands implements CommandExecutor {
 
                     //=================================================
 
-                    Quest tempQuest = new Quest(questId, questName, Arrays.asList("&cTest", "&cdescription", "&cplease change it"), new ItemStack(displayItem), -1, null, null, null,false, true);
+                    Quest tempQuest = new Quest(questId, questName, Arrays.asList("&cTest", "&cdescription", "&cplease change it"), new ItemStack(displayItem), -1, null, null,false, true);
 
                     Main.questManager.registerQuest(tempQuest);
                     Main.questManager.saveQuest(tempQuest);

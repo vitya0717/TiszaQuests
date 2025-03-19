@@ -2,7 +2,9 @@ package org.vitya0717.tiszaQuests.quests;
 
 import org.bukkit.inventory.ItemStack;
 import org.vitya0717.tiszaQuests.quests.objectives.Objective;
+import org.vitya0717.tiszaQuests.quests.objectives.ObjectiveType;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class Quest implements Cloneable {
@@ -11,21 +13,20 @@ public class Quest implements Cloneable {
     private String name;
     private List<String> description;
     private ItemStack displayItem;
-    private QuestType type;
-    private Objective objective;
+    private ObjectiveType type;
+    private HashMap<String,Objective> objectives;
     private List<String> rewards;
     private boolean repeatable;
     private boolean active;
     private int questItemSlot;
 
 
-    public Quest(String id, String name, List<String> description, ItemStack displayItem,int questItemSlot, QuestType type, Objective objective, List<String> rewards, boolean repeatable, boolean active) {
+    public Quest(String id, String name, List<String> description, ItemStack displayItem, int questItemSlot, HashMap<String,Objective> objectives, List<String> rewards, boolean repeatable, boolean active) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.displayItem = displayItem;
-        this.type = type;
-        this.objective = objective;
+        this.objectives = objectives;
         this.rewards = rewards;
         this.repeatable = repeatable;
         this.active = active;
@@ -54,14 +55,6 @@ public class Quest implements Cloneable {
 
     public void setDescription(List<String> description) {
         this.description = description;
-    }
-
-    public QuestType getType() {
-        return type;
-    }
-
-    public void setType(QuestType type) {
-        this.type = type;
     }
 
     public List<String> getRewards() {
@@ -104,12 +97,12 @@ public class Quest implements Cloneable {
         this.questItemSlot = questItemSlot;
     }
 
-    public Objective getObjective() {
-        return objective;
+    public HashMap<String, Objective> getObjectives() {
+        return objectives;
     }
 
-    public void setObjective(Objective objective) {
-        this.objective = objective;
+    public void setObjective(HashMap<String, Objective> objectives) {
+        this.objectives = objectives;
     }
 
     @Override
@@ -120,7 +113,7 @@ public class Quest implements Cloneable {
                 ", description=" + description +
                 ", displayItem=" + displayItem.getType() +
                 ", type=" + type +
-                ", objective=" + objective +
+                ", objectives=" + objectives +
                 ", rewards=" + rewards +
                 ", repeatable=" + repeatable +
                 ", active=" + active +
@@ -135,5 +128,12 @@ public class Quest implements Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
         }
+    }
+
+    public Objective getObjective(String objectiveId) {
+        if(objectives.containsKey(objectiveId)) {
+            return objectives.get(objectiveId);
+        }
+        return null;
     }
 }

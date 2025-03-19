@@ -3,9 +3,7 @@ package org.vitya0717.tiszaQuests.quests;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -16,11 +14,13 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.vitya0717.tiszaQuests.main.Main;
 import org.vitya0717.tiszaQuests.quests.objectives.Objective;
+import org.vitya0717.tiszaQuests.quests.objectives.ObjectiveType;
 import org.vitya0717.tiszaQuests.quests.objectives.PlaceBlocks;
 import org.vitya0717.tiszaQuests.utils.Text;
 import org.vitya0717.tiszaQuests.utils.Utils;
 
 import java.util.*;
+import java.util.logging.Level;
 
 public class QuestManager {
 
@@ -90,9 +90,12 @@ public class QuestManager {
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".displaySlot", quest.getQuestItemSlot());
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".questType", "QUEST_TYPE");
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective", null);
-        if(quest.getObjective() != null) {
-            Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective.block", quest.getObjective().getBlockType().name());
-            Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective.count", quest.getObjective().getRequiredBlocksCount());
+        if (quest.getObjectives() != null) {
+            for (Map.Entry<String, Objective> obj : quest.getObjectives().entrySet()) {
+                Objective objective = obj.getValue();
+                Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective.block", objective.getBlockType().name());
+                Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective.count", objective.getRequiredBlocksCount());
+            }
         }
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".description", quest.getDescription());
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".rewards", quest.getRewards());
@@ -111,20 +114,30 @@ public class QuestManager {
                 String name = config.getString("quests." + id + ".name");
                 boolean enable = config.getBoolean("quests." + id + ".enable");
                 boolean repeate = config.getBoolean("quests." + id + ".repeatable");
-                int slot = config.getInt("quests."+id+".displaySlot");
-                QuestType type = QuestType.valueOf(config.getString("quests." + id + ".questType"));
-                Objective obj = null;
-                switch (type) {
-                    case PLACE_BLOCKS:
-                        Material block = Material.getMaterial(Objects.requireNonNull(config.getString("quests." + id + ".objective.block")));
-                        if (block == null) {
-                            System.out.println("Hibás blokk betöltés!");
-                            return;
-                        }
-                        int count = config.getInt("quests." + id + ".objective.count");
-                        obj = new PlaceBlocks(id, block, count);
-                        break;
+                int slot = config.getInt("quests." + id + ".displaySlot");
+                ConfigurationSection objSection = config.getConfigurationSection("quests." + id + ".objectives");
+                if (objSection == null) {
+                    Bukkit.getLogger().log(Level.CONFIG, "Hibás küldetés objektív beállítás");
+                    return;
                 }
+                Objective obj = null;
+                HashMap<String, Objective> objectiveList = new HashMap<>();
+                for (String objKey : objSection.getKeys(false)) {
+                    ObjectiveType type = ObjectiveType.valueOf(config.getString("quests." + id + ".objectives." + objKey + ".type"));
+                    switch (type) {
+                        case PLACE_BLOCKS:
+                            Material block = Material.getMaterial(Objects.requireNonNull(config.getString("quests." + id + ".objectives." + objKey + ".block")));
+                            if (block == null) {
+                                System.out.println("Hibás blokk betöltés!");
+                                return;
+                            }
+                            int count = config.getInt("quests." + id + ".objectives." + objKey + ".count");
+                            obj = new PlaceBlocks(objKey, id, block, ObjectiveType.PLACE_BLOCKS, count);
+                            objectiveList.put(obj.getObjectiveId(), obj);
+                            break;
+                    }
+                }
+
                 List<String> description = config.getStringList("quests." + id + ".description");
                 ItemStack displayItem = new ItemStack(Objects.requireNonNull(Material.getMaterial(Objects.requireNonNull(config.getString("quests." + id + ".displayItem")))));
                 ItemMeta itemMeta = displayItem.getItemMeta();
@@ -135,13 +148,15 @@ public class QuestManager {
 
                 itemMeta.getPersistentDataContainer().set(questID, PersistentDataType.STRING, id);
 
-                itemMeta.setDisplayName(Utils.Placeholders(null,name));
+                itemMeta.setDisplayName(Utils.Placeholders(null, name));
                 itemMeta.setLore((Utils.Placeholders(description)));
                 displayItem.setItemMeta(itemMeta);
 
                 assert obj != null;
 
-                Quest temp = new Quest(id, name, description, displayItem, slot ,type, obj.clone(), null, repeate, enable);
+                Quest temp = new Quest(id, name, description, displayItem, slot, objectiveList, null, repeate, enable);
+
+                System.out.println(temp.toString());
 
                 registerQuest(temp);
             }

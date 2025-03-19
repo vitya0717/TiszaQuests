@@ -16,8 +16,10 @@ public class Utils {
         
         if(quest != null) {
             s = s.replace("%quest_name%", quest.getName());
-            s = s.replace("%quest_required_placed_blocks%", quest.getObjective().getRequiredBlocksCount()+"");
-            s = s.replace("%quest_placed_blocks%", quest.getObjective().getPlacedBlocksCount()+"");
+            for (String key : quest.getObjectives().keySet()) {
+                s = s.replace("%quest_required_placed_blocks_"+key+"%", quest.getObjective(key).getRequiredBlocksCount()+"");
+                s = s.replace("%quest_placed_blocks_"+key+"%", quest.getObjective(key).getPlacedBlocksCount()+"");
+            }
         }
         return s;
     }

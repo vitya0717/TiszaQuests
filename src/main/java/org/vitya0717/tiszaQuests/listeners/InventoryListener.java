@@ -47,11 +47,11 @@ public class InventoryListener implements Listener {
                 QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
 
                 if (profile != null && action.equals(ClickType.LEFT) && profile.getActiveQuests().stream().noneMatch(q -> q.getId().equalsIgnoreCase(clickedQuest.getId()))) {
-                    switch (clickedQuest.getType()) {
+                    /*switch (clickedQuest.getType()) {
                         case PLACE_BLOCKS:
                             clickedQuest.setObjective(new PlaceBlocks(clickedQuest.getId(), clickedQuest.getObjective().getBlockType(),clickedQuest.getObjective().getRequiredBlocksCount()));
                             break;
-                    }
+                    }*/
                     profile.getActiveQuests().add(clickedQuest);
                     player.sendMessage(Utils.Placeholders(clickedQuest, Text.QUEST_ACCEPT));
                 } else {

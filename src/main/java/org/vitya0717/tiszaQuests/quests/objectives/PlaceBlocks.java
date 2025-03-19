@@ -10,27 +10,27 @@ import org.vitya0717.tiszaQuests.utils.Utils;
 public class PlaceBlocks extends Objective {
 
 
-    public PlaceBlocks(String questId,Material blockType, int count) {
-       super(questId, blockType, count);
+    public PlaceBlocks(String objectiveId, String questId,Material blockType, ObjectiveType type, int count) {
+       super(objectiveId, questId, blockType,type, count);
     }
 
     @Override
-    public void progress(Quest quest, Player player) {
+    public void progress(String objectiveId, Quest quest, Player player) {
         //player.sendMessage(Utils.Placeholders(quest, "%prefix% &aElőrelépés a "+quest.getName() +" &aküldetésben"));
-        quest.getObjective().increasePlacedBlocksCount(1);
-        if(quest.getObjective().getRequiredBlocksCount() == quest.getObjective().getPlacedBlocksCount()) {
-            finish(quest, player);
+        quest.getObjective(objectiveId).increasePlacedBlocksCount(1);
+        if(quest.getObjective(objectiveId).getRequiredBlocksCount() == quest.getObjective(objectiveId).getPlacedBlocksCount()) {
+            finish(objectiveId,quest, player);
             return;
         }
-        player.sendMessage(Utils.Placeholders(quest, "%prefix% &a%quest_placed_blocks%&7/&a%quest_required_placed_blocks%"));
+        player.sendMessage(Utils.Placeholders(quest, "%prefix% &a%quest_placed_blocks_"+objectiveId+"%&7/&a%quest_required_placed_blocks"+objectiveId+"%"));
 
     }
 
     @Override
-    public void finish(Quest quest, Player player) {
+    public void finish(String objectiveId, Quest quest, Player player) {
         QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
 
-        quest.getObjective().setPlacedBlocksCount(0);
+        quest.getObjective(objectiveId).setPlacedBlocksCount(0);
         profile.getActiveQuests().remove(quest);
         System.out.println("[DEBUG] PlaceBlocks: "+quest.getName()+", törölve");
         profile.getCompletedQuests().add(quest);

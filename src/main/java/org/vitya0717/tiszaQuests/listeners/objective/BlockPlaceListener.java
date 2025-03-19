@@ -7,7 +7,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.vitya0717.tiszaQuests.main.Main;
 import org.vitya0717.tiszaQuests.quests.Quest;
-import org.vitya0717.tiszaQuests.quests.QuestType;
+import org.vitya0717.tiszaQuests.quests.objectives.Objective;
+import org.vitya0717.tiszaQuests.quests.objectives.ObjectiveType;
 import org.vitya0717.tiszaQuests.quests.playerProfile.PlayerProfileManager;
 import org.vitya0717.tiszaQuests.quests.playerProfile.QuestPlayerProfile;
 
@@ -28,16 +29,24 @@ public class BlockPlaceListener implements Listener {
         HashMap<String, Quest> placeQuests = new HashMap<>();
 
         for (Quest q : profile.getActiveQuests()) {
-            if (!placeQuests.containsKey(q.getId()) && q.getType().equals(QuestType.PLACE_BLOCKS)) {
-                placeQuests.put(q.getId(), q);
+            if (!placeQuests.containsKey(q.getId())) {
+                for (Map.Entry<String, Objective> obj : q.getObjectives().entrySet()) {
+                    Objective objective = obj.getValue();
+                    if (objective.getType().equals(ObjectiveType.PLACE_BLOCKS)) {
+                        placeQuests.put(q.getId(), q);
+                        System.out.println("[DEBUG] Place quest hozzáadva");
+                    }
+                }
             }
         }
+
         for (Map.Entry<String, Quest> q : placeQuests.entrySet()) {
             Quest quest = q.getValue();
-            if (quest.getObjective().getBlockType().equals(material)) {
-                quest.getObjective().progress(q.getValue(), player);
+            for (String key : quest.getObjectives().keySet()) {
+                if (quest.getObjective(key).getBlockType().equals(material)) {
+                    quest.getObjective(key).progress(key, q.getValue(), player);
+                }
             }
         }
     }
-
 }

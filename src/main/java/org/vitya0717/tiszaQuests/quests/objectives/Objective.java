@@ -7,13 +7,17 @@ import org.vitya0717.tiszaQuests.quests.Quest;
 public abstract class Objective implements Cloneable {
 
     private final String questId;
+    private String objectiveId;
     private Material blockType;
+    private ObjectiveType type;
     private int requiredBlocksCount;
     private int placedBlocksCount;
 
-    public Objective(String questId, Material blockType, int requiredBlocksCount) {
+    public Objective(String objectiveId, String questId, Material blockType, ObjectiveType type, int requiredBlocksCount) {
+        this.objectiveId = objectiveId;
         this.questId = questId;
         this.blockType = blockType;
+        this.type = type;
         this.requiredBlocksCount = requiredBlocksCount;
     }
 
@@ -26,9 +30,9 @@ public abstract class Objective implements Cloneable {
                 '}';
     }
 
-    public abstract void progress(Quest value, Player player);
+    public abstract void progress(String objectiveId, Quest value, Player player);
 
-    public abstract void finish(Quest value, Player player);
+    public abstract void finish(String objectiveId, Quest value, Player player);
 
     public Material getBlockType() {
         return blockType;
@@ -69,5 +73,21 @@ public abstract class Objective implements Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
         }
+    }
+
+    public String getObjectiveId() {
+        return objectiveId;
+    }
+
+    public void setObjectiveId(String objectiveId) {
+        this.objectiveId = objectiveId;
+    }
+
+    public ObjectiveType getType() {
+        return type;
+    }
+
+    public void setType(ObjectiveType type) {
+        this.type = type;
     }
 }
