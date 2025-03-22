@@ -4,7 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.vitya0717.tiszaQuests.quests.Quest;
 
-public abstract class Objective implements Cloneable {
+public abstract class Objective {
 
     private final String questId;
     private String objectiveId;
@@ -12,6 +12,7 @@ public abstract class Objective implements Cloneable {
     private ObjectiveType type;
     private int requiredBlocksCount;
     private int placedBlocksCount;
+    private boolean finishedObjective = false;
 
     public Objective(String objectiveId, String questId, Material blockType, ObjectiveType type, int requiredBlocksCount) {
         this.objectiveId = objectiveId;
@@ -32,7 +33,9 @@ public abstract class Objective implements Cloneable {
 
     public abstract void progress(String objectiveId, Quest value, Player player);
 
-    public abstract void finish(String objectiveId, Quest value, Player player);
+    public abstract void finishObjective(String objectiveId, Quest value, Player player);
+
+    public abstract void finishQuest(String objectiveId, Quest value, Player player);
 
     public Material getBlockType() {
         return blockType;
@@ -66,15 +69,6 @@ public abstract class Objective implements Cloneable {
         this.placedBlocksCount = placedBlocksCount;
     }
 
-    @Override
-    public Objective clone() {
-        try {
-            return (Objective) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
-    }
-
     public String getObjectiveId() {
         return objectiveId;
     }
@@ -89,5 +83,13 @@ public abstract class Objective implements Cloneable {
 
     public void setType(ObjectiveType type) {
         this.type = type;
+    }
+
+    public boolean isFinishedObjective() {
+        return finishedObjective;
+    }
+
+    public void setFinishedObjective(boolean finishedObjective) {
+        this.finishedObjective = finishedObjective;
     }
 }

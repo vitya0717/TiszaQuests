@@ -7,7 +7,7 @@ import org.vitya0717.tiszaQuests.quests.objectives.ObjectiveType;
 import java.util.HashMap;
 import java.util.List;
 
-public class Quest implements Cloneable {
+public class Quest  {
 
     private String id;
     private String name;
@@ -119,15 +119,6 @@ public class Quest implements Cloneable {
                 ", active=" + active +
                 ", questItemSlot=" + questItemSlot +
                 '}';
-    }
-
-    @Override
-    public Quest clone() {
-        try {
-            return (Quest) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
     }
 
     public Objective getObjective(String objectiveId) {

@@ -16,6 +16,7 @@ import org.vitya0717.tiszaQuests.main.Main;
 import org.vitya0717.tiszaQuests.quests.objectives.Objective;
 import org.vitya0717.tiszaQuests.quests.objectives.ObjectiveType;
 import org.vitya0717.tiszaQuests.quests.objectives.PlaceBlocks;
+import org.vitya0717.tiszaQuests.quests.playerProfile.QuestPlayerProfile;
 import org.vitya0717.tiszaQuests.utils.Text;
 import org.vitya0717.tiszaQuests.utils.Utils;
 
@@ -46,39 +47,76 @@ public class QuestManager {
         int columnSize = 9;
 
         if (player != null) {
-            if (!questInventories.containsKey(player.getUniqueId())) {
+            Inventory inventory = questInventories.get(player.getUniqueId());
+
+            if(inventory == null) {
                 questInventories.put(player.getUniqueId(), Bukkit.createInventory(null, rowSize * columnSize, questInventoryTitle));
+                inventory = questInventories.get(player.getUniqueId());
 
-                Inventory inventory = questInventories.get(player.getUniqueId());
+                fillDummyItems(inventory, rowSize, columnSize);
 
-                ItemStack fillItem = new ItemStack(Material.DIRT, 1);
-                ItemMeta itemMeta = fillItem.getItemMeta();
+            }
+            int size = (rowSize * 2) + (columnSize * 2);
 
-                fillItem.addUnsafeEnchantment(Enchantment.LURE, 100);
+            QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
 
-                assert itemMeta != null;
+            if (getItemCount(inventory) - size <= allQuests.size() || profile.isInvNeedUpdate()) {
 
-                itemMeta.setDisplayName(Utils.Colorize(" "));
-                itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                fillUpQuestInventory(inventory, rowSize, columnSize);
 
-                fillItem.setItemMeta(itemMeta);
-
-                for (int i = 0; i < rowSize; i++) {
-                    for (int j = 0; j < columnSize; j++) {
-                        int itemIndex = i * columnSize + j;
-                        if (i == 0 || i == rowSize - 1 || j == 0 || j == columnSize - 1) {
-                            fillItem.setType((itemIndex % 2 == 0) ? Material.BLACK_STAINED_GLASS_PANE : Material.WHITE_STAINED_GLASS_PANE);
-                            inventory.setItem(itemIndex, fillItem);
-                        }
-                    }
-                }
-                for (Map.Entry<String, Quest> questEntry : allQuests.entrySet()) {
-                    Quest quest = questEntry.getValue();
-                    inventory.setItem(quest.getQuestItemSlot(), quest.getDisplayItem());
+                if(profile != null && profile.isInvNeedUpdate()) {
+                    profile.setInvNeedUpdate(false);
                 }
             }
             player.openInventory(questInventories.get(player.getUniqueId()));
             player.sendMessage(Utils.Colorize(Text.OPEN_QUEST_MENU));
+        }
+    }
+
+    private int getItemCount(Inventory inventory) {
+        int output = 0;
+        for (ItemStack item : inventory.getContents()) {
+            if(item != null) {
+                output++;
+            }
+        }
+        return output;
+    }
+
+    private void fillDummyItems(Inventory inventory, int rowSize, int columnSize) {
+        ItemStack fillItem = new ItemStack(Material.DIRT, 1);
+        ItemMeta itemMeta = fillItem.getItemMeta();
+        fillItem.addUnsafeEnchantment(Enchantment.LURE, 100);
+        assert itemMeta != null;
+        itemMeta.setDisplayName(Utils.Colorize(" "));
+        itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        fillItem.setItemMeta(itemMeta);
+
+        //dummy items
+        for (int i = 0; i < rowSize; i++) {
+            for (int j = 0; j < columnSize; j++) {
+                int itemIndex = i * columnSize + j;
+                if (i == 0 || i == rowSize - 1 || j == 0 || j == columnSize - 1) {
+                    fillItem.setType((itemIndex % 2 == 0) ? Material.BLACK_STAINED_GLASS_PANE : Material.WHITE_STAINED_GLASS_PANE);
+                    inventory.setItem(itemIndex, fillItem);
+                }
+            }
+        }
+    }
+
+    private void fillUpQuestInventory(Inventory inventory, int rowSize, int columnSize) {
+        for (Map.Entry<String, Quest> questEntry : allQuests.entrySet()) {
+            Quest quest = questEntry.getValue();
+            ItemMeta meta = quest.getDisplayItem().getItemMeta();
+
+            if(meta == null) return;
+
+            List<String> lore = Utils.Placeholders(quest, quest.getDescription());
+
+            meta.setLore(lore);
+
+            quest.getDisplayItem().setItemMeta(meta);
+            inventory.setItem(quest.getQuestItemSlot(), quest.getDisplayItem());
         }
     }
 
@@ -140,23 +178,20 @@ public class QuestManager {
 
                 List<String> description = config.getStringList("quests." + id + ".description");
                 ItemStack displayItem = new ItemStack(Objects.requireNonNull(Material.getMaterial(Objects.requireNonNull(config.getString("quests." + id + ".displayItem")))));
-                ItemMeta itemMeta = displayItem.getItemMeta();
-
-                NamespacedKey questID = new NamespacedKey(instance, "questId");
-
-                assert itemMeta != null;
-
-                itemMeta.getPersistentDataContainer().set(questID, PersistentDataType.STRING, id);
-
-                itemMeta.setDisplayName(Utils.Placeholders(null, name));
-                itemMeta.setLore((Utils.Placeholders(description)));
-                displayItem.setItemMeta(itemMeta);
 
                 assert obj != null;
 
                 Quest temp = new Quest(id, name, description, displayItem, slot, objectiveList, null, repeate, enable);
 
-                System.out.println(temp.toString());
+                ItemMeta itemMeta = temp.getDisplayItem().getItemMeta();
+                NamespacedKey questID = new NamespacedKey(instance, "questId");
+                assert itemMeta != null;
+                itemMeta.getPersistentDataContainer().set(questID, PersistentDataType.STRING, id);
+                itemMeta.setDisplayName(Utils.Placeholders(null, name));
+                itemMeta.setLore((Utils.Placeholders(temp,description)));
+                temp.getDisplayItem().setItemMeta(itemMeta);
+
+                System.out.println(temp);
 
                 registerQuest(temp);
             }

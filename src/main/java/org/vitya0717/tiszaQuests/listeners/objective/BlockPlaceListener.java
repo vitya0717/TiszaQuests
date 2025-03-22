@@ -16,6 +16,7 @@ import java.util.*;
 
 public class BlockPlaceListener implements Listener {
 
+    HashMap<String, Quest> placeQuests = new HashMap<>();
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
@@ -24,17 +25,20 @@ public class BlockPlaceListener implements Listener {
         PlayerProfileManager manager = Main.profileManager;
 
         if (!manager.allLoadedProfile.containsKey(player.getUniqueId())) return;
-        QuestPlayerProfile profile = manager.allLoadedProfile.get(player.getUniqueId());
 
-        HashMap<String, Quest> placeQuests = new HashMap<>();
+        QuestPlayerProfile profile = manager.allLoadedProfile.get(player.getUniqueId());
 
         for (Quest q : profile.getActiveQuests()) {
             if (!placeQuests.containsKey(q.getId())) {
                 for (Map.Entry<String, Objective> obj : q.getObjectives().entrySet()) {
+
                     Objective objective = obj.getValue();
+
+                    if (objective.isFinishedObjective()) continue;
+
                     if (objective.getType().equals(ObjectiveType.PLACE_BLOCKS)) {
                         placeQuests.put(q.getId(), q);
-                        System.out.println("[DEBUG] Place quest hozzáadva");
+                        System.out.println("[DEBUG] Place quest hozzáadva: " + objective.getObjectiveId());
                     }
                 }
             }
@@ -43,8 +47,12 @@ public class BlockPlaceListener implements Listener {
         for (Map.Entry<String, Quest> q : placeQuests.entrySet()) {
             Quest quest = q.getValue();
             for (String key : quest.getObjectives().keySet()) {
-                if (quest.getObjective(key).getBlockType().equals(material)) {
-                    quest.getObjective(key).progress(key, q.getValue(), player);
+                Objective obj = quest.getObjective(key);
+
+                if (obj.isFinishedObjective()) continue;
+
+                if (obj.getBlockType().equals(material)) {
+                    obj.progress(key, q.getValue(), player);
                 }
             }
         }

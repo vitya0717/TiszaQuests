@@ -20,7 +20,12 @@ public class Mining extends Objective {
     }
 
     @Override
-    public void finish(String objectiveId, Quest value, Player player) {
+    public void finishObjective(String objectiveId, Quest value, Player player) {
+
+    }
+
+    @Override
+    public void finishQuest(String objectiveId, Quest value, Player player) {
 
     }
 

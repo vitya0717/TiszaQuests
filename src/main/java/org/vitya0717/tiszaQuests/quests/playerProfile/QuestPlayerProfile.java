@@ -12,6 +12,7 @@ public class QuestPlayerProfile {
     private int questPoints;
     private int completedQuestsCount;
     private int activeQuestCount;
+    private boolean invNeedUpdate = false;
     private final List<Quest> completedQuests = new ArrayList<>();
     private final List<Quest> activeQuests = new ArrayList<>();
 
@@ -63,4 +64,13 @@ public class QuestPlayerProfile {
     }
 
 
+
+
+    public boolean isInvNeedUpdate() {
+        return invNeedUpdate;
+    }
+
+    public void setInvNeedUpdate(boolean invNeedUpdate) {
+        this.invNeedUpdate = invNeedUpdate;
+    }
 }

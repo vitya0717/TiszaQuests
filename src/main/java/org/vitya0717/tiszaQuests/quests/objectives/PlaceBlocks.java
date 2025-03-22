@@ -19,25 +19,34 @@ public class PlaceBlocks extends Objective {
         //player.sendMessage(Utils.Placeholders(quest, "%prefix% &aElőrelépés a "+quest.getName() +" &aküldetésben"));
         quest.getObjective(objectiveId).increasePlacedBlocksCount(1);
         if(quest.getObjective(objectiveId).getRequiredBlocksCount() == quest.getObjective(objectiveId).getPlacedBlocksCount()) {
-            finish(objectiveId,quest, player);
+            finishObjective(objectiveId,quest, player);
             return;
         }
-        player.sendMessage(Utils.Placeholders(quest, "%prefix% &a%quest_placed_blocks_"+objectiveId+"%&7/&a%quest_required_placed_blocks"+objectiveId+"%"));
+
+        QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
+
+        //send update request for quest gui if needed
+        if(!profile.isInvNeedUpdate()) {
+            profile.setInvNeedUpdate(true);
+        }
+
+        player.sendMessage(Utils.Placeholders(quest, "%prefix% | &6"+quest.getName()+" &8| &a%quest_placed_blocks_"+objectiveId+"%&7/&a%quest_required_placed_blocks_"+objectiveId+"%"));
 
     }
 
     @Override
-    public void finish(String objectiveId, Quest quest, Player player) {
+    public void finishObjective(String objectiveId, Quest quest, Player player) {
         QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
-
-        quest.getObjective(objectiveId).setPlacedBlocksCount(0);
-        profile.getActiveQuests().remove(quest);
-        System.out.println("[DEBUG] PlaceBlocks: "+quest.getName()+", törölve");
-        profile.getCompletedQuests().add(quest);
-        System.out.println("[DEBUG] PlaceBlocks: "+quest.getName()+", hozzáadva a kész küldetésekhez");
-
-
+        //quest.getObjective(objectiveId).setPlacedBlocksCount(0);
+        quest.getObjective(objectiveId).setFinishedObjective(true);
         player.sendMessage(Utils.Placeholders(quest, "%prefix% &aSikeresen teljesítetted a küldetést!"));
+    }
+
+    @Override
+    public void finishQuest(String objectiveId, Quest quest, Player player) {
+        QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
+        profile.getActiveQuests().remove(quest);
+        profile.getCompletedQuests().add(quest);
     }
 
 }

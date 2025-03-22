@@ -27,9 +27,10 @@ quests:
     # Maximum nem látszódik majd, mert kimegy a képernyőről xd
     description:
       - ''
-      - '&7Feladat &8»'
-      - '&7- &eRakj le &f5 &ekövet'
-      - ''
+      - '   &6Feladatok'
+      - '&7Rakj le &8»'
+      - '&a%quest_placed_blocks_1%&7/&a%quest_required_placed_blocks_1% &6%quest_placed_block_type_1%'
+      - '&a%quest_placed_blocks_2%&7/&a%quest_required_placed_blocks_2% &6%quest_placed_block_type_2%'
       - ''
       - '&7Jutalom &8»'
       - '&7- &e1500$'
