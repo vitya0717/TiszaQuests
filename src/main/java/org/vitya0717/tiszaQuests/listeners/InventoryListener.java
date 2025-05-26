@@ -44,8 +44,10 @@ public class InventoryListener implements Listener {
                 QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
 
                 if (profile != null && action.equals(ClickType.LEFT) && profile.getActiveQuests().stream().noneMatch(q -> q.getId().equalsIgnoreCase(clickedQuest.getId()))) {
-                    profile.getActiveQuests().add(clickedQuest);
+                    profile.getActiveQuests().add(clickedQuest.clone());
                     player.sendMessage(Utils.Placeholders(clickedQuest, Text.QUEST_ACCEPT));
+
+                    //debug only
                     for (Quest quest :  profile.getActiveQuests()) {
                         System.out.println(quest);
                         System.out.println("----------------------------------");

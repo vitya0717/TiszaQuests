@@ -3,6 +3,7 @@ package org.vitya0717.tiszaQuests.quests.playerProfile;
 import org.vitya0717.tiszaQuests.quests.Quest;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -63,14 +64,24 @@ public class QuestPlayerProfile {
         this.activeQuestCount = activeQuestCount;
     }
 
-
-
-
     public boolean isInvNeedUpdate() {
         return invNeedUpdate;
     }
 
     public void setInvNeedUpdate(boolean invNeedUpdate) {
         this.invNeedUpdate = invNeedUpdate;
+    }
+
+    @Override
+    public String toString() {
+        return "QuestPlayerProfile{" +
+                "playerUUID=" + playerUUID +
+                ", questPoints=" + questPoints +
+                ", completedQuestsCount=" + completedQuestsCount +
+                ", activeQuestCount=" + activeQuestCount +
+                ", invNeedUpdate=" + invNeedUpdate +
+                ", completedQuests=" + completedQuests +
+                ", activeQuests=" + activeQuests +
+                '}';
     }
 }

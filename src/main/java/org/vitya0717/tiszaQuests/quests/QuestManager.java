@@ -49,7 +49,7 @@ public class QuestManager {
         if (player != null) {
             Inventory inventory = questInventories.get(player.getUniqueId());
 
-            if(inventory == null) {
+            if (inventory == null) {
                 questInventories.put(player.getUniqueId(), Bukkit.createInventory(null, rowSize * columnSize, questInventoryTitle));
                 inventory = questInventories.get(player.getUniqueId());
 
@@ -64,7 +64,7 @@ public class QuestManager {
 
                 fillUpQuestInventory(inventory, rowSize, columnSize);
 
-                if(profile != null && profile.isInvNeedUpdate()) {
+                if (profile != null && profile.isInvNeedUpdate()) {
                     profile.setInvNeedUpdate(false);
                 }
             }
@@ -76,7 +76,7 @@ public class QuestManager {
     private int getItemCount(Inventory inventory) {
         int output = 0;
         for (ItemStack item : inventory.getContents()) {
-            if(item != null) {
+            if (item != null) {
                 output++;
             }
         }
@@ -109,7 +109,7 @@ public class QuestManager {
             Quest quest = questEntry.getValue();
             ItemMeta meta = quest.getDisplayItem().getItemMeta();
 
-            if(meta == null) return;
+            if (meta == null) return;
 
             List<String> lore = Utils.Placeholders(quest, quest.getDescription());
 
@@ -128,11 +128,19 @@ public class QuestManager {
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".displaySlot", quest.getQuestItemSlot());
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".questType", "QUEST_TYPE");
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective", null);
+
+        //Objective part still need an update
         if (quest.getObjectives() != null) {
             for (Map.Entry<String, Objective> obj : quest.getObjectives().entrySet()) {
                 Objective objective = obj.getValue();
-                Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective.block", objective.getBlockType().name());
-                Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective.count", objective.getRequiredBlocksCount());
+                switch (objective.getType()) {
+                    case PLACE_BLOCKS:
+                        PlaceBlocks placeObjective = (PlaceBlocks) objective;
+                        Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective.block", placeObjective.getBlockType().name());
+                        Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective.count", placeObjective.getRequiredBlocksCount());
+                        break;
+                }
+                Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective.displayName", objective.getDisplayName());
             }
         }
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".description", quest.getDescription());
@@ -160,7 +168,11 @@ public class QuestManager {
                 }
                 Objective obj = null;
                 HashMap<String, Objective> objectiveList = new HashMap<>();
+
                 for (String objKey : objSection.getKeys(false)) {
+
+                    String displayName = config.getString("quests." + id + ".objectives." + objKey + ".displayName");
+
                     ObjectiveType type = ObjectiveType.valueOf(config.getString("quests." + id + ".objectives." + objKey + ".type"));
                     switch (type) {
                         case PLACE_BLOCKS:
@@ -170,7 +182,7 @@ public class QuestManager {
                                 return;
                             }
                             int count = config.getInt("quests." + id + ".objectives." + objKey + ".count");
-                            obj = new PlaceBlocks(objKey, id, block, ObjectiveType.PLACE_BLOCKS, count);
+                            obj = new PlaceBlocks(objKey, id, displayName, block, ObjectiveType.PLACE_BLOCKS, count, 0);
                             objectiveList.put(obj.getObjectiveId(), obj);
                             break;
                     }
@@ -188,7 +200,7 @@ public class QuestManager {
                 assert itemMeta != null;
                 itemMeta.getPersistentDataContainer().set(questID, PersistentDataType.STRING, id);
                 itemMeta.setDisplayName(Utils.Placeholders(null, name));
-                itemMeta.setLore((Utils.Placeholders(temp,description)));
+                itemMeta.setLore((Utils.Placeholders(temp, description)));
                 temp.getDisplayItem().setItemMeta(itemMeta);
 
                 System.out.println(temp);
@@ -201,5 +213,47 @@ public class QuestManager {
 
 
         System.out.println("Sikeresen betöltve " + allQuests.size() + " küldetés");
+    }
+
+    public Quest findQuestById(String questId) {
+        for (Map.Entry<String, Quest> entry : allQuests.entrySet()) {
+            Quest q = entry.getValue();
+            if (Objects.equals(q.getId(), questId)) {
+                return q;
+            }
+        }
+        return null;
+    }
+
+    public Quest findQuestInProfileByQuestId(QuestPlayerProfile profile, String questId) {
+        for (Quest q : profile.getActiveQuests()) {
+            if (Objects.equals(q.getId(), questId)) {
+                return q;
+            }
+        }
+        return null;
+    }
+
+    public int finishedObjectivesCount(Quest quest) {
+        int finishedObjectiveCount = 0;
+        for (Map.Entry<String, Objective> entry : quest.getObjectives().entrySet()) {
+            Objective obj = entry.getValue();
+            if (obj.isFinishedObjective()) {
+                finishedObjectiveCount++;
+            }
+        }
+        return finishedObjectiveCount;
+    }
+
+    public boolean hasObjectiveType(List<Quest> quests, ObjectiveType objectiveType) {
+        for (Quest quest : quests) {
+            for (Map.Entry<String, Objective> objective : quest.getObjectives().entrySet()) {
+                ObjectiveType type = objective.getValue().getType();
+                if (type.equals(objectiveType)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

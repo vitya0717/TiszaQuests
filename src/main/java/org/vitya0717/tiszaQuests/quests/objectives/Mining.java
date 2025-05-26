@@ -10,22 +10,22 @@ public class Mining extends Objective {
 
     private int count;
 
-    public Mining(String objectiveId ,String questId, Material blockType, ObjectiveType type, int count) {
-        super(objectiveId, questId, blockType, type, count);
+    public Mining(String objectiveId ,String questId, String displayName, Material blockType, ObjectiveType type, int count) {
+        super(objectiveId, questId, displayName, type);
     }
 
     @Override
-    public void progress(String objectiveId, Quest value, Player player) {
-
-    }
-
-    @Override
-    public void finishObjective(String objectiveId, Quest value, Player player) {
+    public void progress(String objectiveId, String questId, Player player) {
 
     }
 
     @Override
-    public void finishQuest(String objectiveId, Quest value, Player player) {
+    public void finishObjective(String objectiveId, String questId, Player player) {
+
+    }
+
+    @Override
+    public void finishQuest(Quest value, Player player) {
 
     }
 

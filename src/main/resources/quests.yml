@@ -16,10 +16,12 @@ quests:
     # Mit kell teljesíteni a küldetés során
     objectives:
       1:
+        displayName: "&bKő lerakás"
         type: PLACE_BLOCKS
         block: STONE
         count: 5
       2:
+        displayName: "&bGyémántblokk lerakás"
         type: PLACE_BLOCKS
         block: DIAMOND_BLOCK
         count: 5

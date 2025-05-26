@@ -9,6 +9,7 @@ import org.vitya0717.tiszaQuests.main.Main;
 import org.vitya0717.tiszaQuests.quests.Quest;
 import org.vitya0717.tiszaQuests.quests.objectives.Objective;
 import org.vitya0717.tiszaQuests.quests.objectives.ObjectiveType;
+import org.vitya0717.tiszaQuests.quests.objectives.PlaceBlocks;
 import org.vitya0717.tiszaQuests.quests.playerProfile.PlayerProfileManager;
 import org.vitya0717.tiszaQuests.quests.playerProfile.QuestPlayerProfile;
 
@@ -16,7 +17,6 @@ import java.util.*;
 
 public class BlockPlaceListener implements Listener {
 
-    HashMap<String, Quest> placeQuests = new HashMap<>();
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
@@ -28,33 +28,42 @@ public class BlockPlaceListener implements Listener {
 
         QuestPlayerProfile profile = manager.allLoadedProfile.get(player.getUniqueId());
 
-        for (Quest q : profile.getActiveQuests()) {
-            if (!placeQuests.containsKey(q.getId())) {
-                for (Map.Entry<String, Objective> obj : q.getObjectives().entrySet()) {
+        List<Quest> playerQuests = new ArrayList<>(profile.getActiveQuests());
 
-                    Objective objective = obj.getValue();
-
-                    if (objective.isFinishedObjective()) continue;
-
-                    if (objective.getType().equals(ObjectiveType.PLACE_BLOCKS)) {
-                        placeQuests.put(q.getId(), q);
-                        System.out.println("[DEBUG] Place quest hozzáadva: " + objective.getObjectiveId());
-                    }
-                }
-            }
+        if (playerQuests == null || playerQuests.isEmpty()) {
+            return;
         }
 
-        for (Map.Entry<String, Quest> q : placeQuests.entrySet()) {
-            Quest quest = q.getValue();
+        if (Main.questManager.hasObjectiveType(playerQuests, ObjectiveType.PLACE_BLOCKS) && !ObjectivesContainsBlock(playerQuests, material)) {
+            player.sendMessage("Nincs benne");
+            return;
+        }
+
+        for (Quest quest :  playerQuests) {
             for (String key : quest.getObjectives().keySet()) {
-                Objective obj = quest.getObjective(key);
 
-                if (obj.isFinishedObjective()) continue;
+                PlaceBlocks placeObjective = (PlaceBlocks) quest.getObjective(key);
 
-                if (obj.getBlockType().equals(material)) {
-                    obj.progress(key, q.getValue(), player);
+                if (placeObjective.isFinishedObjective()) continue;
+
+                if (placeObjective.getBlockType().equals(material)) {
+                    placeObjective.progress(key, quest.getId(), player);
                 }
             }
         }
+    }
+
+    private boolean ObjectivesContainsBlock(List<Quest> activeQuests, Material material) {
+        for (Quest quest : activeQuests) {
+            for (Map.Entry<String, Objective> entry : quest.getObjectives().entrySet()) {
+                Objective obj = entry.getValue();
+                PlaceBlocks placeObj = (PlaceBlocks) obj;
+                if (placeObj.getBlockType().equals(material)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

@@ -56,6 +56,6 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        System.out.println("A keldetes plugin leallt");
+        System.out.println("A kuldetes plugin leallt");
     }
 }

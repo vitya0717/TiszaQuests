@@ -4,10 +4,12 @@ import org.bukkit.inventory.ItemStack;
 import org.vitya0717.tiszaQuests.quests.objectives.Objective;
 import org.vitya0717.tiszaQuests.quests.objectives.ObjectiveType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class Quest  {
+public class Quest implements Cloneable {
 
     private String id;
     private String name;
@@ -110,7 +112,6 @@ public class Quest  {
         return "Quest{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
-                ", description=" + description +
                 ", displayItem=" + displayItem.getType() +
                 ", type=" + type +
                 ", objectives=" + objectives +
@@ -126,5 +127,26 @@ public class Quest  {
             return objectives.get(objectiveId);
         }
         return null;
+    }
+
+    @Override
+    public Quest clone() {
+        try {
+            Quest clone = (Quest) super.clone();
+
+            clone.setObjective(null);
+            HashMap<String, Objective> oldHash = new HashMap<>(this.objectives);
+            HashMap<String, Objective> newHash = new HashMap<>(this.objectives);
+            for (Map.Entry<String, Objective> obj : oldHash.entrySet()) {
+                newHash.put(obj.getKey(), obj.getValue().clone());
+            }
+            clone.setObjective(newHash);
+            clone.description = new ArrayList<>(this.description);
+            //clone.rewards = new ArrayList<>(this.rewards);
+
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }
