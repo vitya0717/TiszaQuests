@@ -14,6 +14,7 @@ public class PlayerJoinListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         PlayerProfileManager manager = Main.profileManager;
+
         if(!manager.allLoadedProfile.containsKey(player.getUniqueId())) {
             QuestPlayerProfile profile = new QuestPlayerProfile(player.getUniqueId(), 0,0,0);
             manager.registerPlayerProfile(profile);

@@ -16,6 +16,7 @@ import org.vitya0717.tiszaQuests.main.Main;
 import org.vitya0717.tiszaQuests.quests.objectives.Objective;
 import org.vitya0717.tiszaQuests.quests.objectives.ObjectiveType;
 import org.vitya0717.tiszaQuests.quests.objectives.PlaceBlocks;
+import org.vitya0717.tiszaQuests.quests.playerProfile.QuestPlayerProfile;
 import org.vitya0717.tiszaQuests.utils.Text;
 import org.vitya0717.tiszaQuests.utils.Utils;
 
@@ -46,39 +47,89 @@ public class QuestManager {
         int columnSize = 9;
 
         if (player != null) {
-            if (!questInventories.containsKey(player.getUniqueId())) {
+            Inventory inventory = questInventories.get(player.getUniqueId());
+
+            if (inventory == null) {
                 questInventories.put(player.getUniqueId(), Bukkit.createInventory(null, rowSize * columnSize, questInventoryTitle));
+                inventory = questInventories.get(player.getUniqueId());
 
-                Inventory inventory = questInventories.get(player.getUniqueId());
+                fillDummyItems(inventory, rowSize, columnSize);
 
-                ItemStack fillItem = new ItemStack(Material.DIRT, 1);
-                ItemMeta itemMeta = fillItem.getItemMeta();
+            }
+            int size = (rowSize * 2) + (columnSize * 2);
 
-                fillItem.addUnsafeEnchantment(Enchantment.LURE, 100);
+            QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
 
-                assert itemMeta != null;
+            if (getItemCount(inventory) - size <= allQuests.size() || profile.isInvNeedUpdate()) {
 
-                itemMeta.setDisplayName(Utils.Colorize(" "));
-                itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                fillUpQuestInventory(inventory, profile, rowSize, columnSize);
 
-                fillItem.setItemMeta(itemMeta);
-
-                for (int i = 0; i < rowSize; i++) {
-                    for (int j = 0; j < columnSize; j++) {
-                        int itemIndex = i * columnSize + j;
-                        if (i == 0 || i == rowSize - 1 || j == 0 || j == columnSize - 1) {
-                            fillItem.setType((itemIndex % 2 == 0) ? Material.BLACK_STAINED_GLASS_PANE : Material.WHITE_STAINED_GLASS_PANE);
-                            inventory.setItem(itemIndex, fillItem);
-                        }
-                    }
-                }
-                for (Map.Entry<String, Quest> questEntry : allQuests.entrySet()) {
-                    Quest quest = questEntry.getValue();
-                    inventory.setItem(quest.getQuestItemSlot(), quest.getDisplayItem());
+                if (profile != null && profile.isInvNeedUpdate()) {
+                    profile.setInvNeedUpdate(false);
                 }
             }
-            player.openInventory(questInventories.get(player.getUniqueId()));
+
+            //player.openInventory(questInventories.get(player.getUniqueId()));
+            player.openInventory(inventory);
             player.sendMessage(Utils.Colorize(Text.OPEN_QUEST_MENU));
+        }
+    }
+
+    private int getItemCount(Inventory inventory) {
+        int output = 0;
+        for (ItemStack item : inventory.getContents()) {
+            if (item != null) {
+                output++;
+            }
+        }
+        return output;
+    }
+
+    private void fillDummyItems(Inventory inventory, int rowSize, int columnSize) {
+        ItemStack fillItem = new ItemStack(Material.DIRT, 1);
+        ItemMeta itemMeta = fillItem.getItemMeta();
+        fillItem.addUnsafeEnchantment(Enchantment.LURE, 100);
+        assert itemMeta != null;
+        itemMeta.setDisplayName(Utils.Colorize(" "));
+        itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        fillItem.setItemMeta(itemMeta);
+
+        //dummy items
+        for (int i = 0; i < rowSize; i++) {
+            for (int j = 0; j < columnSize; j++) {
+                int itemIndex = i * columnSize + j;
+                if (i == 0 || i == rowSize - 1 || j == 0 || j == columnSize - 1) {
+                    fillItem.setType((itemIndex % 2 == 0) ? Material.BLACK_STAINED_GLASS_PANE : Material.WHITE_STAINED_GLASS_PANE);
+                    inventory.setItem(itemIndex, fillItem);
+                }
+            }
+        }
+    }
+
+    private void fillUpQuestInventory(Inventory inventory, QuestPlayerProfile profile, int rowSize, int columnSize) {
+        for (Map.Entry<String, Quest> questEntry : allQuests.entrySet()) {
+
+            Quest quest = questEntry.getValue();
+
+            Quest playerQuest = Main.questManager.findQuestInPlayerProfile(profile.getPlayerUUID(), quest.getId());
+
+            if(playerQuest != null) {
+                quest = playerQuest;
+            }
+
+            if(quest.getDisplayItem() == null) {
+                Main.instance.getLogger().warning("Quest"+quest.getName()+" display item was null");
+            }
+
+            ItemMeta meta = quest.getDisplayItem().getItemMeta();
+
+            if (meta == null) continue;
+
+            List<String> lore = Utils.Placeholders(quest, quest.getDescription());
+            meta.setLore(lore);
+
+            quest.getDisplayItem().setItemMeta(meta);
+            inventory.setItem(quest.getQuestItemSlot(), quest.getDisplayItem());
         }
     }
 
@@ -90,11 +141,19 @@ public class QuestManager {
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".displaySlot", quest.getQuestItemSlot());
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".questType", "QUEST_TYPE");
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective", null);
+
+        //Objective part still need an update
         if (quest.getObjectives() != null) {
             for (Map.Entry<String, Objective> obj : quest.getObjectives().entrySet()) {
                 Objective objective = obj.getValue();
-                Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective.block", objective.getBlockType().name());
-                Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective.count", objective.getRequiredBlocksCount());
+                switch (objective.getType()) {
+                    case PLACE_BLOCKS:
+                        PlaceBlocks placeObjective = (PlaceBlocks) objective;
+                        Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective.block", placeObjective.getBlockType().name());
+                        Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective.count", placeObjective.getRequiredBlocksCount());
+                        break;
+                }
+                Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective.displayName", objective.getDisplayName());
             }
         }
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".description", quest.getDescription());
@@ -122,7 +181,11 @@ public class QuestManager {
                 }
                 Objective obj = null;
                 HashMap<String, Objective> objectiveList = new HashMap<>();
+
                 for (String objKey : objSection.getKeys(false)) {
+
+                    String displayName = config.getString("quests." + id + ".objectives." + objKey + ".displayName");
+
                     ObjectiveType type = ObjectiveType.valueOf(config.getString("quests." + id + ".objectives." + objKey + ".type"));
                     switch (type) {
                         case PLACE_BLOCKS:
@@ -132,7 +195,7 @@ public class QuestManager {
                                 return;
                             }
                             int count = config.getInt("quests." + id + ".objectives." + objKey + ".count");
-                            obj = new PlaceBlocks(objKey, id, block, ObjectiveType.PLACE_BLOCKS, count);
+                            obj = new PlaceBlocks(objKey, id, displayName, block, ObjectiveType.PLACE_BLOCKS, count, 0);
                             objectiveList.put(obj.getObjectiveId(), obj);
                             break;
                     }
@@ -140,23 +203,20 @@ public class QuestManager {
 
                 List<String> description = config.getStringList("quests." + id + ".description");
                 ItemStack displayItem = new ItemStack(Objects.requireNonNull(Material.getMaterial(Objects.requireNonNull(config.getString("quests." + id + ".displayItem")))));
-                ItemMeta itemMeta = displayItem.getItemMeta();
-
-                NamespacedKey questID = new NamespacedKey(instance, "questId");
-
-                assert itemMeta != null;
-
-                itemMeta.getPersistentDataContainer().set(questID, PersistentDataType.STRING, id);
-
-                itemMeta.setDisplayName(Utils.Placeholders(null, name));
-                itemMeta.setLore((Utils.Placeholders(description)));
-                displayItem.setItemMeta(itemMeta);
 
                 assert obj != null;
 
                 Quest temp = new Quest(id, name, description, displayItem, slot, objectiveList, null, repeate, enable);
 
-                System.out.println(temp.toString());
+                ItemMeta itemMeta = temp.getDisplayItem().getItemMeta();
+                NamespacedKey questID = new NamespacedKey(instance, "questId");
+                assert itemMeta != null;
+                itemMeta.getPersistentDataContainer().set(questID, PersistentDataType.STRING, id);
+                itemMeta.setDisplayName(Utils.Placeholders(null, name));
+                itemMeta.setLore((Utils.Placeholders(temp, description)));
+                temp.getDisplayItem().setItemMeta(itemMeta);
+
+                System.out.println(temp);
 
                 registerQuest(temp);
             }
@@ -166,5 +226,52 @@ public class QuestManager {
 
 
         System.out.println("Sikeresen betöltve " + allQuests.size() + " küldetés");
+    }
+
+    public Quest findQuestById(String questId) {
+        for (Map.Entry<String, Quest> entry : allQuests.entrySet()) {
+            Quest q = entry.getValue();
+            if (Objects.equals(q.getId(), questId)) {
+                return q;
+            }
+        }
+        return null;
+    }
+
+    public Quest findQuestInPlayerProfile(UUID playerUUID,String questId) {
+        QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(playerUUID);
+        if(profile == null){
+            return null;
+        }
+        for (String qId : profile.getActiveQuestIds()) {
+            if (Objects.equals(qId, questId)) {
+                return profile.getActiveQuests().get(qId);
+            }
+        }
+        return null;
+    }
+
+    public int finishedObjectivesCount(Quest quest) {
+        int finishedObjectiveCount = 0;
+        for (Map.Entry<String, Objective> entry : quest.getObjectives().entrySet()) {
+            Objective obj = entry.getValue();
+            if (obj.isFinishedObjective()) {
+                finishedObjectiveCount++;
+            }
+        }
+        return finishedObjectiveCount;
+    }
+
+    public boolean hasObjectiveType(HashMap<String, Quest> quests, ObjectiveType objectiveType) {
+        for (Map.Entry<String, Quest> entry :  quests.entrySet()) {
+            Quest quest = entry.getValue();
+            for (Map.Entry<String, Objective> objective : quest.getObjectives().entrySet()) {
+                ObjectiveType type = objective.getValue().getType();
+                if (type.equals(objectiveType)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
