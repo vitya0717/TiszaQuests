@@ -34,7 +34,7 @@ public class PlaceBlocks extends Objective implements Cloneable {
     public void progress(String objectiveId, String questId, Player player) {
         QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
 
-        Quest quest = Main.questManager.findQuestInProfileByQuestId(profile, questId);
+        Quest quest = profile.findActiveQuestByQuestId(questId);
         PlaceBlocks placeObjective = (PlaceBlocks) quest.getObjective(objectiveId);
         placeObjective.increasePlacedBlocksCount(1);
 
@@ -46,6 +46,7 @@ public class PlaceBlocks extends Objective implements Cloneable {
         //send update request for quest gui if needed
         if(!profile.isInvNeedUpdate()) {
             profile.setInvNeedUpdate(true);
+            System.out.println("frissites kerve");
         }
 
         player.sendMessage(Utils.Placeholders(quest, "%prefix% | &6"+"%quest_objective_display_name_"+objectiveId+"%"+" &8| &a%quest_placed_blocks_"+objectiveId+"%&7/&a%quest_required_placed_blocks_"+objectiveId+"%"));
@@ -61,7 +62,7 @@ public class PlaceBlocks extends Objective implements Cloneable {
 
         QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
 
-        Quest quest = Main.questManager.findQuestInProfileByQuestId(profile, questId);
+        Quest quest = profile.findActiveQuestByQuestId(questId);
 
         quest.getObjective(objectiveId).finishObjective(true);
 
@@ -77,7 +78,11 @@ public class PlaceBlocks extends Objective implements Cloneable {
     @Override
     public void finishQuest(Quest quest, Player player) {
         QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
-        profile.getActiveQuests().remove(quest);
+
+        profile.getActiveQuests().remove(quest.getId());
+        profile.getActiveQuestIds().remove(quest.getId());
+
+
         profile.getCompletedQuests().add(quest);
         player.sendMessage("Sikeresen teljesitetted a kuldetest: "+quest.getName());
     }

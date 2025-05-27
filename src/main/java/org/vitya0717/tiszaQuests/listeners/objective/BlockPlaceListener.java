@@ -28,9 +28,9 @@ public class BlockPlaceListener implements Listener {
 
         QuestPlayerProfile profile = manager.allLoadedProfile.get(player.getUniqueId());
 
-        List<Quest> playerQuests = new ArrayList<>(profile.getActiveQuests());
+        HashMap<String, Quest> playerQuests = new HashMap<>(profile.getActiveQuests());
 
-        if (playerQuests == null || playerQuests.isEmpty()) {
+        if (playerQuests.isEmpty()) {
             return;
         }
 
@@ -39,7 +39,8 @@ public class BlockPlaceListener implements Listener {
             return;
         }
 
-        for (Quest quest :  playerQuests) {
+        for (Map.Entry<String, Quest> entry :  playerQuests.entrySet()) {
+            Quest quest = entry.getValue();
             for (String key : quest.getObjectives().keySet()) {
 
                 PlaceBlocks placeObjective = (PlaceBlocks) quest.getObjective(key);
@@ -53,8 +54,9 @@ public class BlockPlaceListener implements Listener {
         }
     }
 
-    private boolean ObjectivesContainsBlock(List<Quest> activeQuests, Material material) {
-        for (Quest quest : activeQuests) {
+    private boolean ObjectivesContainsBlock(HashMap<String, Quest> activeQuests, Material material) {
+        for (Map.Entry<String, Quest> questEntry : activeQuests.entrySet()) {
+            Quest quest = questEntry.getValue();
             for (Map.Entry<String, Objective> entry : quest.getObjectives().entrySet()) {
                 Objective obj = entry.getValue();
                 PlaceBlocks placeObj = (PlaceBlocks) obj;

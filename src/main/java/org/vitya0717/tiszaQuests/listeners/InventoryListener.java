@@ -40,19 +40,29 @@ public class InventoryListener implements Listener {
             NamespacedKey key = new NamespacedKey(Main.instance, "questId");
 
             if(data.has(key, PersistentDataType.STRING)) {
-                Quest clickedQuest = Main.questManager.allQuests.get(data.get(key, PersistentDataType.STRING));
+                Quest clickedQuest = Main.questManager.findQuestById(data.get(key, PersistentDataType.STRING));
+
+                if(clickedQuest == null) {
+                    Main.instance.getLogger().warning("Quest not found");
+                    return;
+                }
+
                 QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
 
-                if (profile != null && action.equals(ClickType.LEFT) && profile.getActiveQuests().stream().noneMatch(q -> q.getId().equalsIgnoreCase(clickedQuest.getId()))) {
-                    profile.getActiveQuests().add(clickedQuest.clone());
+                if(profile == null) {
+                    Main.instance.getLogger().warning("Profile not found");
+                    return;
+                }
+
+                Quest playerQuest = profile.findActiveQuestByQuestId(data.get(key, PersistentDataType.STRING));
+
+                if (action.equals(ClickType.LEFT) && playerQuest == null) {
+
+                    profile.getActiveQuests().put(clickedQuest.getId(),clickedQuest.clone());
+                    profile.getActiveQuestIds().add(clickedQuest.getId());
+
+                    clickedQuest = Main.questManager.findQuestInPlayerProfile(player.getUniqueId(), data.get(key, PersistentDataType.STRING));
                     player.sendMessage(Utils.Placeholders(clickedQuest, Text.QUEST_ACCEPT));
-
-                    //debug only
-                    for (Quest quest :  profile.getActiveQuests()) {
-                        System.out.println(quest);
-                        System.out.println("----------------------------------");
-
-                    }
                 } else {
                     player.sendMessage(Utils.Placeholders(clickedQuest, Text.ALREADY_ACCEPTED_QUEST));
                 }

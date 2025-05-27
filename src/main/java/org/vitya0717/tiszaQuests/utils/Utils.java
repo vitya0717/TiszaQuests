@@ -39,7 +39,6 @@ public class Utils {
     public static List<String> Placeholders(Quest quest, List<String> s) {
         s = s.stream().map(c -> ChatColor.translateAlternateColorCodes('&', c)).collect(Collectors.toList());
         s = s.stream().map(c -> c.replace("%prefix%", Text.PREFIX)).collect(Collectors.toList());
-
         for (String key : quest.getObjectives().keySet()) {
             if(quest.getObjective(key) != null) {
                 s = s.stream().map(c -> c.replace("%quest_required_placed_blocks_"+key+"%", ((PlaceBlocks)quest.getObjective(key)).getRequiredBlocksCount()+"")).collect(Collectors.toList());

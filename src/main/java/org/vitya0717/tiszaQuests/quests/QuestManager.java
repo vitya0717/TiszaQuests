@@ -62,13 +62,15 @@ public class QuestManager {
 
             if (getItemCount(inventory) - size <= allQuests.size() || profile.isInvNeedUpdate()) {
 
-                fillUpQuestInventory(inventory, rowSize, columnSize);
+                fillUpQuestInventory(inventory, profile, rowSize, columnSize);
 
                 if (profile != null && profile.isInvNeedUpdate()) {
                     profile.setInvNeedUpdate(false);
                 }
             }
-            player.openInventory(questInventories.get(player.getUniqueId()));
+
+            //player.openInventory(questInventories.get(player.getUniqueId()));
+            player.openInventory(inventory);
             player.sendMessage(Utils.Colorize(Text.OPEN_QUEST_MENU));
         }
     }
@@ -104,15 +106,26 @@ public class QuestManager {
         }
     }
 
-    private void fillUpQuestInventory(Inventory inventory, int rowSize, int columnSize) {
+    private void fillUpQuestInventory(Inventory inventory, QuestPlayerProfile profile, int rowSize, int columnSize) {
         for (Map.Entry<String, Quest> questEntry : allQuests.entrySet()) {
+
             Quest quest = questEntry.getValue();
+
+            Quest playerQuest = Main.questManager.findQuestInPlayerProfile(profile.getPlayerUUID(), quest.getId());
+
+            if(playerQuest != null) {
+                quest = playerQuest;
+            }
+
+            if(quest.getDisplayItem() == null) {
+                Main.instance.getLogger().warning("Quest"+quest.getName()+" display item was null");
+            }
+
             ItemMeta meta = quest.getDisplayItem().getItemMeta();
 
-            if (meta == null) return;
+            if (meta == null) continue;
 
             List<String> lore = Utils.Placeholders(quest, quest.getDescription());
-
             meta.setLore(lore);
 
             quest.getDisplayItem().setItemMeta(meta);
@@ -225,10 +238,14 @@ public class QuestManager {
         return null;
     }
 
-    public Quest findQuestInProfileByQuestId(QuestPlayerProfile profile, String questId) {
-        for (Quest q : profile.getActiveQuests()) {
-            if (Objects.equals(q.getId(), questId)) {
-                return q;
+    public Quest findQuestInPlayerProfile(UUID playerUUID,String questId) {
+        QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(playerUUID);
+        if(profile == null){
+            return null;
+        }
+        for (String qId : profile.getActiveQuestIds()) {
+            if (Objects.equals(qId, questId)) {
+                return profile.getActiveQuests().get(qId);
             }
         }
         return null;
@@ -245,8 +262,9 @@ public class QuestManager {
         return finishedObjectiveCount;
     }
 
-    public boolean hasObjectiveType(List<Quest> quests, ObjectiveType objectiveType) {
-        for (Quest quest : quests) {
+    public boolean hasObjectiveType(HashMap<String, Quest> quests, ObjectiveType objectiveType) {
+        for (Map.Entry<String, Quest> entry :  quests.entrySet()) {
+            Quest quest = entry.getValue();
             for (Map.Entry<String, Objective> objective : quest.getObjectives().entrySet()) {
                 ObjectiveType type = objective.getValue().getType();
                 if (type.equals(objectiveType)) {

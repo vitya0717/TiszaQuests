@@ -2,10 +2,7 @@ package org.vitya0717.tiszaQuests.quests.playerProfile;
 
 import org.vitya0717.tiszaQuests.quests.Quest;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class QuestPlayerProfile {
 
@@ -15,7 +12,9 @@ public class QuestPlayerProfile {
     private int activeQuestCount;
     private boolean invNeedUpdate = false;
     private final List<Quest> completedQuests = new ArrayList<>();
-    private final List<Quest> activeQuests = new ArrayList<>();
+
+    private final HashMap<String,Quest> activeQuests = new HashMap<>();
+    private final Set<String> activeQuestIds = new HashSet<>();
 
     public int getQuestPoints() {
         return questPoints;
@@ -45,16 +44,16 @@ public class QuestPlayerProfile {
         return activeQuestCount;
     }
 
+    public HashMap<String, Quest> getActiveQuests() {
+        return activeQuests;
+    }
+
     public void setActiveQuestCount(int activeQuestCount) {
         this.activeQuestCount = activeQuestCount;
     }
 
     public List<Quest> getCompletedQuests() {
         return completedQuests;
-    }
-
-    public List<Quest> getActiveQuests() {
-        return activeQuests;
     }
 
     public QuestPlayerProfile(UUID playerUUID, int questPoints, int completedQuestsCount, int activeQuestCount) {
@@ -72,6 +71,15 @@ public class QuestPlayerProfile {
         this.invNeedUpdate = invNeedUpdate;
     }
 
+    public Quest findActiveQuestByQuestId(String questId) {
+        for (String qId : this.getActiveQuestIds()) {
+            if (Objects.equals(qId, questId)) {
+                return this.getActiveQuests().get(qId);
+            }
+        }
+        return null;
+    }
+
     @Override
     public String toString() {
         return "QuestPlayerProfile{" +
@@ -83,5 +91,9 @@ public class QuestPlayerProfile {
                 ", completedQuests=" + completedQuests +
                 ", activeQuests=" + activeQuests +
                 '}';
+    }
+
+    public Set<String> getActiveQuestIds() {
+        return activeQuestIds;
     }
 }
