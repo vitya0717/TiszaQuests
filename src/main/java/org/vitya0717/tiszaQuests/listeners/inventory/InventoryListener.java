@@ -30,28 +30,19 @@ public class InventoryListener implements Listener {
 
             event.setCancelled(true);
 
-            if(event.getCurrentItem() == null) return;
-
             ItemMeta meta = event.getCurrentItem().getItemMeta();
 
-            if(meta == null) return;
+            if(event.getCurrentItem() == null || meta == null) return;
 
             PersistentDataContainer data = meta.getPersistentDataContainer();
-
             NamespacedKey key = new NamespacedKey(Main.instance, "questId");
 
             if(data.has(key, PersistentDataType.STRING)) {
+
                 Quest clickedQuest = Main.questManager.findQuestById(data.get(key, PersistentDataType.STRING));
-
-                if(clickedQuest == null) {
-                    //Main.instance.getLogger().warning("Quest not found");
-                    return;
-                }
-
                 QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
 
-                if(profile == null) {
-                    //Main.instance.getLogger().warning("Profile not found");
+                if( clickedQuest == null || profile == null ) {
                     return;
                 }
 
@@ -77,12 +68,7 @@ public class InventoryListener implements Listener {
 
         QuestInventory inv = Main.questManager.questInventories.get(player.getUniqueId());
 
-        if(inv== null){
-            Main.instance.getLogger().warning("Inventory not found.");
-            return;
-        }
-
-        if(event.getView().getTitle().equals(inv.getTitle())) {
+        if(inv != null && event.getView().getTitle().equals(inv.getTitle())) {
             if(!inv.getInventoryUpdateTask().isCancelled()) {
                 inv.getInventoryUpdateTask().cancel();
                 inv.setInventoryUpdateTask(null);

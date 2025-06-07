@@ -109,8 +109,9 @@ public class QuestsPageManager {
             nextButtonData.set(nextKey, PersistentDataType.STRING, "nextButton");
 
             nextPageButton.setItemMeta(nextPageButtonMeta);
-            inventory.setItem(53, nextPageButton);
         }
+        inventory.setItem(53, nextPageButton);
+
         if(backPageButton == null) {
             backPageButton = new ItemStack(Material.PAPER);
             ItemMeta backPageButtonMeta = nextPageButton.getItemMeta();
@@ -120,8 +121,8 @@ public class QuestsPageManager {
             backButtonData.set(nextKey, PersistentDataType.STRING, "backButton");
 
             backPageButton.setItemMeta(backPageButtonMeta);
-            inventory.setItem(45, backPageButton);
         }
+        inventory.setItem(45, backPageButton);
     }
 
     public void generatePagesOfQuests(HashMap<String, Quest> allQuests) {
@@ -129,7 +130,7 @@ public class QuestsPageManager {
         int questCount = 0;
         int currentQuestCount = allQuests.size();
         int pageLen = 1;
-        int maxContentPerPage = 10;
+        int maxContentPerPage = 18;
 
         QuestsPage questsPage = new QuestsPage(instance);
         questsPage.setMaxPageContents(maxContentPerPage);
@@ -149,6 +150,7 @@ public class QuestsPageManager {
                 questCount = 0;
 
                 if (currentQuestCount != 0) {
+
                     questsPage = new QuestsPage(instance);
                     questsPage.setMaxPageContents(maxContentPerPage);
                 }

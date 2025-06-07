@@ -10,12 +10,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.vitya0717.tiszaQuests.main.Main;
-import org.vitya0717.tiszaQuests.quest.Quest;
 import org.vitya0717.tiszaQuests.quest.playerProfile.QuestPlayerProfile;
-import org.vitya0717.tiszaQuests.utils.Text;
-import org.vitya0717.tiszaQuests.utils.Utils;
-
-import java.util.Objects;
 
 public class ButtonClickListener implements Listener {
 
@@ -27,42 +22,57 @@ public class ButtonClickListener implements Listener {
         ClickType action = event.getClick();
 
         if (clickedInvName.equalsIgnoreCase(Main.questManager.questInventoryTitle)) {
-            event.setCancelled(true);
 
-            if (event.getCurrentItem() == null) return;
+            event.setCancelled(true);
 
             ItemMeta meta = event.getCurrentItem().getItemMeta();
 
-            if (meta == null) return;
+            if (event.getCurrentItem() == null || meta == null) return;
 
             PersistentDataContainer data = meta.getPersistentDataContainer();
             NamespacedKey key = new NamespacedKey(Main.instance, "button-type");
 
-            if (data.has(key, PersistentDataType.STRING)) {
-                if (action.equals(ClickType.LEFT)) {
-                    QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
+            if (data.has(key, PersistentDataType.STRING) && action.equals(ClickType.LEFT)) {
 
-                    if(profile == null) {
+                QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
+
+                String buttonType = data.get(key, PersistentDataType.STRING);
+
+                switch (buttonType) {
+                    case "nextButton":
+                        goNextPage(profile);
+                        break;
+                    case "backButton":
+                        goBackPage(profile);
+                        break;
+                    case null:
                         return;
-                    }
-
-                    String buttonType = data.get(key, PersistentDataType.STRING);
-
-                    if (Objects.equals(buttonType, "nextButton")) {
-                        if(Main.questsPageManager.getPages().get(profile.getCurrentPageOn() + 1) == null) {
-                            return;
-                        }
-                        Main.questsPageManager.goToNextPage(profile);
-                    } else if(Objects.equals(buttonType, "backButton")) {
-                        if(Main.questsPageManager.getPages().get(profile.getCurrentPageOn() - 1) == null) {
-                            return;
-                        }
-                        Main.questsPageManager.goToPreviousPage(profile);
-                    }
+                    default:
                 }
             }
         }
+    }
 
+    private void goBackPage(QuestPlayerProfile profile) {
+        if (profile == null) {
+            return;
+        }
+        if (Main.questsPageManager.getPages().get(profile.getCurrentPageOn() - 1) == null) {
+            return;
+        }
+        Main.questsPageManager.goToPreviousPage(profile);
+    }
+
+    private void goNextPage(QuestPlayerProfile profile) {
+
+        if (profile == null) {
+            return;
+        }
+
+        if (Main.questsPageManager.getPages().get(profile.getCurrentPageOn() + 1) == null) {
+            return;
+        }
+        Main.questsPageManager.goToNextPage(profile);
     }
 
 }
