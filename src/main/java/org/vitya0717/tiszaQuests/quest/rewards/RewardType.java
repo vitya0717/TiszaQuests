@@ -1,4 +1,4 @@
-package org.vitya0717.tiszaQuests.quests.rewards;
+package org.vitya0717.tiszaQuests.quest.rewards;
 
 public enum RewardType {
 

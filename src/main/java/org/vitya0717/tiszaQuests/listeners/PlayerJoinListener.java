@@ -5,8 +5,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.vitya0717.tiszaQuests.main.Main;
-import org.vitya0717.tiszaQuests.quests.playerProfile.PlayerProfileManager;
-import org.vitya0717.tiszaQuests.quests.playerProfile.QuestPlayerProfile;
+import org.vitya0717.tiszaQuests.quest.playerProfile.PlayerProfileManager;
+import org.vitya0717.tiszaQuests.quest.playerProfile.QuestPlayerProfile;
 
 public class PlayerJoinListener implements Listener {
 

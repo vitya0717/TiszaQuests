@@ -1,17 +1,20 @@
-package org.vitya0717.tiszaQuests.quests.objectives;
+package org.vitya0717.tiszaQuests.quest.objectives;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 import org.vitya0717.tiszaQuests.main.Main;
-import org.vitya0717.tiszaQuests.quests.Quest;
-import org.vitya0717.tiszaQuests.quests.playerProfile.QuestPlayerProfile;
+import org.vitya0717.tiszaQuests.quest.Quest;
+import org.vitya0717.tiszaQuests.quest.playerProfile.QuestPlayerProfile;
 import org.vitya0717.tiszaQuests.utils.Utils;
+import org.vitya0717.tiszaQuests.utils.tasks.QuestDelay;
 
 public class PlaceBlocks extends Objective implements Cloneable {
 
     private int placedBlocksCount;
     private final Material blockType;
     private int requiredBlocksCount;
+    private QuestDelay questDelay = null;
 
     public PlaceBlocks(String objectiveId, String questId, String displayName, Material blockType, ObjectiveType type, int requiredBlocksCount, int placedBlocksCount) {
         super(objectiveId, questId, displayName, type);
@@ -41,12 +44,6 @@ public class PlaceBlocks extends Objective implements Cloneable {
         if(placeObjective.getRequiredBlocksCount() == placeObjective.getPlacedBlocksCount()) {
             finishObjective(objectiveId,quest.getId(), player);
             return;
-        }
-
-        //send update request for quest gui if needed
-        if(!profile.isInvNeedUpdate()) {
-            profile.setInvNeedUpdate(true);
-            System.out.println("frissites kerve");
         }
 
         player.sendMessage(Utils.Placeholders(quest, "%prefix% | &6"+"%quest_objective_display_name_"+objectiveId+"%"+" &8| &a%quest_placed_blocks_"+objectiveId+"%&7/&a%quest_required_placed_blocks_"+objectiveId+"%"));
@@ -83,8 +80,16 @@ public class PlaceBlocks extends Objective implements Cloneable {
         profile.getActiveQuestIds().remove(quest.getId());
 
 
-        profile.getCompletedQuests().add(quest);
-        player.sendMessage("Sikeresen teljesitetted a kuldetest: "+quest.getName());
+        profile.getCompletedQuests().put(quest.getId(), quest);
+        profile.getCompletedQuestsIds().add(quest.getId());
+
+        player.sendMessage( Utils.Placeholders(quest, "&aSikeresen teljesitetted a kuldetest: "+quest.getName()));
+
+        if(questDelay == null) {
+            questDelay = new QuestDelay(Main.instance, quest, player.getUniqueId());
+        }
+        BukkitTask questDelayTask = questDelay.runTaskTimer(Main.instance, 0, 20);
+        profile.getDelayedQuests().put(quest.getId(), questDelayTask);
     }
 
     public int getPlacedBlocksCount() {
@@ -106,5 +111,13 @@ public class PlaceBlocks extends Objective implements Cloneable {
     @Override
     public PlaceBlocks clone() {
         return (PlaceBlocks) super.clone();
+    }
+
+    public QuestDelay getQuestDelay() {
+        return questDelay;
+    }
+
+    public void setQuestDelay(QuestDelay questDelay) {
+        this.questDelay = questDelay;
     }
 }

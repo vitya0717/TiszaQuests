@@ -5,15 +5,20 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.vitya0717.tiszaQuests.commands.QuestCommands;
 import org.vitya0717.tiszaQuests.configuration.CustomConfig;
-import org.vitya0717.tiszaQuests.listeners.InventoryListener;
+import org.vitya0717.tiszaQuests.listeners.inventory.ButtonClickListener;
+import org.vitya0717.tiszaQuests.listeners.inventory.InventoryListener;
 import org.vitya0717.tiszaQuests.listeners.PlayerJoinListener;
 import org.vitya0717.tiszaQuests.listeners.objective.BlockPlaceListener;
-import org.vitya0717.tiszaQuests.quests.QuestManager;
-import org.vitya0717.tiszaQuests.quests.playerProfile.PlayerProfileManager;
+import org.vitya0717.tiszaQuests.quest.QuestManager;
+import org.vitya0717.tiszaQuests.quest.exceptions.InvalidQuestConfigurationException;
+import org.vitya0717.tiszaQuests.quest.exceptions.InvalidQuestObjectiveConfigurationException;
+import org.vitya0717.tiszaQuests.quest.inventory.QuestsPageManager;
+import org.vitya0717.tiszaQuests.quest.playerProfile.PlayerProfileManager;
 
 public final class Main extends JavaPlugin {
 
     public static QuestManager questManager;
+    public static QuestsPageManager questsPageManager;
     public static PlayerProfileManager profileManager;
     public static CustomConfig questConfig;
 
@@ -30,17 +35,28 @@ public final class Main extends JavaPlugin {
         questConfig.saveDefaultConfig();
 
         questManager = new QuestManager(instance);
+        questsPageManager = new QuestsPageManager(instance);
         profileManager = new PlayerProfileManager(instance);
 
         registerCommands(instance);
         registerEvents(instance);
 
-        questManager.loadQuests();
+        getLogger().info("Loading quests...");
+            try {
+                questManager.loadQuests();
+                getLogger().info("Successfully loaded quests.");
+            } catch (InvalidQuestConfigurationException | InvalidQuestObjectiveConfigurationException e) {
+                getLogger().severe("Failed to load a quests");
+                getLogger().severe(e.getMessage());
+            }
+
+        getLogger().info("Loading online players profile...");
         for(Player online : Bukkit.getOnlinePlayers()) {
             profileManager.loadProfile(online.getUniqueId());
         }
+        getLogger().info("Successfully loaded "+profileManager.allLoadedProfile.size()+" online profile.");
 
-        System.out.println("A kuldetes plugin elindult!");
+        getLogger().info("The quest plugin enabled on this server!");
 
     }
 
@@ -50,6 +66,7 @@ public final class Main extends JavaPlugin {
 
     private void registerEvents(Main instance) {
         Bukkit.getPluginManager().registerEvents(new InventoryListener(), instance);
+        Bukkit.getPluginManager().registerEvents(new ButtonClickListener(), instance);
         Bukkit.getPluginManager().registerEvents(new BlockPlaceListener(), instance);
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), instance);
     }

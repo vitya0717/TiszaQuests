@@ -1,18 +1,19 @@
-package org.vitya0717.tiszaQuests.listeners;
+package org.vitya0717.tiszaQuests.listeners.inventory;
 
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.vitya0717.tiszaQuests.main.Main;
-import org.vitya0717.tiszaQuests.quests.Quest;
-import org.vitya0717.tiszaQuests.quests.playerProfile.QuestPlayerProfile;
+import org.vitya0717.tiszaQuests.quest.Quest;
+import org.vitya0717.tiszaQuests.quest.inventory.QuestInventory;
+import org.vitya0717.tiszaQuests.quest.playerProfile.QuestPlayerProfile;
 import org.vitya0717.tiszaQuests.utils.Text;
 import org.vitya0717.tiszaQuests.utils.Utils;
 
@@ -43,14 +44,14 @@ public class InventoryListener implements Listener {
                 Quest clickedQuest = Main.questManager.findQuestById(data.get(key, PersistentDataType.STRING));
 
                 if(clickedQuest == null) {
-                    Main.instance.getLogger().warning("Quest not found");
+                    //Main.instance.getLogger().warning("Quest not found");
                     return;
                 }
 
                 QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
 
                 if(profile == null) {
-                    Main.instance.getLogger().warning("Profile not found");
+                    //Main.instance.getLogger().warning("Profile not found");
                     return;
                 }
 
@@ -68,6 +69,26 @@ public class InventoryListener implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        Player player = (Player) event.getPlayer();
+
+        QuestInventory inv = Main.questManager.questInventories.get(player.getUniqueId());
+
+        if(inv== null){
+            Main.instance.getLogger().warning("Inventory not found.");
+            return;
+        }
+
+        if(event.getView().getTitle().equals(inv.getTitle())) {
+            if(!inv.getInventoryUpdateTask().isCancelled()) {
+                inv.getInventoryUpdateTask().cancel();
+                inv.setInventoryUpdateTask(null);
+            }
+        }
+
     }
 
 }
