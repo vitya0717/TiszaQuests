@@ -1,6 +1,5 @@
 package org.vitya0717.tiszaQuests.commands;
 
-import jdk.jshell.execution.Util;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -8,7 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.vitya0717.tiszaQuests.main.Main;
-import org.vitya0717.tiszaQuests.quests.Quest;
+import org.vitya0717.tiszaQuests.quest.Quest;
 import org.vitya0717.tiszaQuests.utils.Text;
 import org.vitya0717.tiszaQuests.utils.Utils;
 
@@ -27,7 +26,7 @@ public class QuestCommands implements CommandExecutor {
         if(args.length == 0) {
             try {
                 if(sender.hasPermission("tiszaquest.default") || sender.hasPermission("tiszaquest.admin")) {
-                    Main.questManager.openQuestMenu((Player) sender);
+                    Main.questsPageManager.openQuestMenu((Player) sender);
                     return true;
                 }
             } catch (Exception ex) {
@@ -71,7 +70,7 @@ public class QuestCommands implements CommandExecutor {
 
                     //=================================================
 
-                    Quest tempQuest = new Quest(questId, questName, Arrays.asList("&cTest", "&cdescription", "&cplease change it"), new ItemStack(displayItem), -1, null, null,false, true);
+                    Quest tempQuest = new Quest(questId, questName, new ItemStack(displayItem), -1, 0);
 
                     Main.questManager.registerQuest(tempQuest);
                     Main.questManager.saveQuest(tempQuest);

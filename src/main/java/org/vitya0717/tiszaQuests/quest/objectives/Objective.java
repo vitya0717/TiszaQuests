@@ -1,8 +1,7 @@
-package org.vitya0717.tiszaQuests.quests.objectives;
+package org.vitya0717.tiszaQuests.quest.objectives;
 
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.vitya0717.tiszaQuests.quests.Quest;
+import org.vitya0717.tiszaQuests.quest.Quest;
 
 public abstract class Objective implements Cloneable {
 

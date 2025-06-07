@@ -6,12 +6,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.vitya0717.tiszaQuests.main.Main;
-import org.vitya0717.tiszaQuests.quests.Quest;
-import org.vitya0717.tiszaQuests.quests.objectives.Objective;
-import org.vitya0717.tiszaQuests.quests.objectives.ObjectiveType;
-import org.vitya0717.tiszaQuests.quests.objectives.PlaceBlocks;
-import org.vitya0717.tiszaQuests.quests.playerProfile.PlayerProfileManager;
-import org.vitya0717.tiszaQuests.quests.playerProfile.QuestPlayerProfile;
+import org.vitya0717.tiszaQuests.quest.Quest;
+import org.vitya0717.tiszaQuests.quest.objectives.Objective;
+import org.vitya0717.tiszaQuests.quest.objectives.ObjectiveType;
+import org.vitya0717.tiszaQuests.quest.objectives.PlaceBlocks;
+import org.vitya0717.tiszaQuests.quest.playerProfile.PlayerProfileManager;
+import org.vitya0717.tiszaQuests.quest.playerProfile.QuestPlayerProfile;
 
 import java.util.*;
 

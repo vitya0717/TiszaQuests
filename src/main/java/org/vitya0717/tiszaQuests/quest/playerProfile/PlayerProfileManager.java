@@ -1,4 +1,4 @@
-package org.vitya0717.tiszaQuests.quests.playerProfile;
+package org.vitya0717.tiszaQuests.quest.playerProfile;
 
 import org.vitya0717.tiszaQuests.main.Main;
 

@@ -1,4 +1,4 @@
-package org.vitya0717.tiszaQuests.quests.objectives;
+package org.vitya0717.tiszaQuests.quest.objectives;
 
 public enum ObjectiveType {
 
