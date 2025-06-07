@@ -28,7 +28,8 @@ import java.util.*;
 public class QuestManager {
 
     private final Main instance;
-    public final HashMap<String, Quest> allQuests = new HashMap<>();
+    //public final HashMap<String, Quest> allQuests = new HashMap<>();
+    public final LinkedHashMap<String, Quest> allQuests = new LinkedHashMap<>();
     public QuestInventoryTask itemUpdate = null;
 
     public final HashMap<UUID, QuestInventory> questInventories = new HashMap<>();
@@ -57,7 +58,7 @@ public class QuestManager {
         return output;
     }
 
-    private void fillDummyItems(Inventory inventory, int rowSize, int columnSize) {
+    /*private void fillDummyItems(Inventory inventory, int rowSize, int columnSize) {
         ItemStack fillItem = new ItemStack(Material.DIRT, 1);
         ItemMeta itemMeta = fillItem.getItemMeta();
         fillItem.addUnsafeEnchantment(Enchantment.LURE, 100);
@@ -76,7 +77,7 @@ public class QuestManager {
                 }
             }
         }
-    }
+    }*/
 
     public void saveQuest(Quest quest) {
         Main.questConfig.getConfig().set("quests." + quest.getId(), null);
@@ -139,6 +140,7 @@ public class QuestManager {
             temp.setActive(enable);
             temp.setDescription(description);
             temp.setRepeatable(repeat);
+            temp.setObjective(objectiveList);
 
             ItemMeta itemMeta = temp.getDisplayItem().getItemMeta();
 
