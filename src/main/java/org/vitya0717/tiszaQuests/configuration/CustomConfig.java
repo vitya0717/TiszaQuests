@@ -35,7 +35,7 @@ public class CustomConfig implements IConfiguration{
         try {
             fileConfiguration.save(file);
         } catch (IOException e) {
-            System.out.println(Utils.Colorize("&8[&fTalpra, Fiatalok&8] » &cNem tudom menteni a konfigurációt!"));
+            System.out.println(Utils.Colorize("&8[&fTalpra, Fiatalok&8] » &cCannot save the configuration!"));
         }
     }
 
@@ -45,7 +45,7 @@ public class CustomConfig implements IConfiguration{
         try {
             fileConfiguration.load(file);
         } catch (IOException | InvalidConfigurationException e) {
-            System.out.println(Utils.Colorize("&8[&fTalpra, Fiatalok&8] » &cNem tudom betölteni a konfigurációt!"));
+            System.out.println(Utils.Colorize("&8[&fTalpra, Fiatalok&8] » &cCannot load the configuration!"));
         }
     }
 }

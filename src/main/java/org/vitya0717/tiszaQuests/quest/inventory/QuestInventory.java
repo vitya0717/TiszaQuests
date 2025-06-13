@@ -41,6 +41,7 @@ public class QuestInventory {
 
     public void buildInventory(int  rowSize, int columnSize, String invTitle) {
         this.inventory = Bukkit.createInventory(null, rowSize * columnSize, invTitle);
+        this.title = invTitle;
     }
 
     public BukkitTask getInventoryUpdateTask() {
@@ -57,5 +58,16 @@ public class QuestInventory {
 
     public void setQuestPlayerProfile(QuestPlayerProfile questPlayerProfile) {
         this.questPlayerProfile = questPlayerProfile;
+    }
+
+    @Override
+    public String toString() {
+        return "QuestInventory{" +
+                "plugin=" + plugin +
+                ", title='" + title + '\'' +
+                ", inventory=" + inventory +
+                ", inventoryUpdateTask=" + inventoryUpdateTask +
+                ", questPlayerProfile=" + questPlayerProfile +
+                '}';
     }
 }

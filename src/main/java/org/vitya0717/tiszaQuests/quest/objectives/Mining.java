@@ -3,6 +3,8 @@ package org.vitya0717.tiszaQuests.quest.objectives;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.vitya0717.tiszaQuests.quest.Quest;
+import org.vitya0717.tiszaQuests.quest.objectives.enums.ObjectiveType;
+import org.vitya0717.tiszaQuests.quest.objectives.parent.Objective;
 
 public class Mining extends Objective {
 
@@ -10,7 +12,7 @@ public class Mining extends Objective {
 
     private int count;
 
-    public Mining(String objectiveId ,String questId, String displayName, Material blockType, ObjectiveType type, int count) {
+    public Mining(String objectiveId , String questId, String displayName, Material blockType, ObjectiveType type, int count) {
         super(objectiveId, questId, displayName, type);
     }
 

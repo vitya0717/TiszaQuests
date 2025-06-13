@@ -6,10 +6,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.vitya0717.tiszaQuests.main.Main;
+import org.vitya0717.tiszaQuests.quest.inventory.questspage.QuestsPage;
 import org.vitya0717.tiszaQuests.quest.playerProfile.QuestPlayerProfile;
 
 public class ButtonClickListener implements Listener {
@@ -20,14 +22,14 @@ public class ButtonClickListener implements Listener {
         Player player = (Player) event.getWhoClicked();
         String clickedInvName = event.getView().getTitle();
         ClickType action = event.getClick();
+        ItemStack clickedItem = event.getCurrentItem();
 
         if (clickedInvName.equalsIgnoreCase(Main.questManager.questInventoryTitle)) {
 
             event.setCancelled(true);
 
-            ItemMeta meta = event.getCurrentItem().getItemMeta();
-
-            if (event.getCurrentItem() == null || meta == null) return;
+            ItemMeta meta = clickedItem != null ? clickedItem.getItemMeta() : null;
+            if (meta == null) return;
 
             PersistentDataContainer data = meta.getPersistentDataContainer();
             NamespacedKey key = new NamespacedKey(Main.instance, "button-type");
@@ -57,7 +59,8 @@ public class ButtonClickListener implements Listener {
         if (profile == null) {
             return;
         }
-        if (Main.questsPageManager.getPages().get(profile.getCurrentPageOn() - 1) == null) {
+        QuestsPage page = Main.questsPageManager.getPages().get(profile.getCurrentPageOn() - 1);
+        if (page == null) {
             return;
         }
         Main.questsPageManager.goToPreviousPage(profile);
@@ -68,8 +71,8 @@ public class ButtonClickListener implements Listener {
         if (profile == null) {
             return;
         }
-
-        if (Main.questsPageManager.getPages().get(profile.getCurrentPageOn() + 1) == null) {
+        QuestsPage page = Main.questsPageManager.getPages().get(profile.getCurrentPageOn() + 1);
+        if (page == null) {
             return;
         }
         Main.questsPageManager.goToNextPage(profile);

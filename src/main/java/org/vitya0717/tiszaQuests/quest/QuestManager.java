@@ -4,9 +4,6 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -14,8 +11,8 @@ import org.vitya0717.tiszaQuests.main.Main;
 import org.vitya0717.tiszaQuests.quest.exceptions.InvalidQuestConfigurationException;
 import org.vitya0717.tiszaQuests.quest.exceptions.InvalidQuestObjectiveConfigurationException;
 import org.vitya0717.tiszaQuests.quest.inventory.QuestInventory;
-import org.vitya0717.tiszaQuests.quest.objectives.Objective;
-import org.vitya0717.tiszaQuests.quest.objectives.ObjectiveType;
+import org.vitya0717.tiszaQuests.quest.objectives.parent.Objective;
+import org.vitya0717.tiszaQuests.quest.objectives.enums.ObjectiveType;
 import org.vitya0717.tiszaQuests.quest.objectives.PlaceBlocks;
 import org.vitya0717.tiszaQuests.quest.playerProfile.QuestPlayerProfile;
 import org.vitya0717.tiszaQuests.utils.QuestValidator;
@@ -48,40 +45,9 @@ public class QuestManager {
         }
     }
 
-    private int getItemCount(Inventory inventory) {
-        int output = 0;
-        for (ItemStack item : inventory.getContents()) {
-            if (item != null) {
-                output++;
-            }
-        }
-        return output;
-    }
-
-    /*private void fillDummyItems(Inventory inventory, int rowSize, int columnSize) {
-        ItemStack fillItem = new ItemStack(Material.DIRT, 1);
-        ItemMeta itemMeta = fillItem.getItemMeta();
-        fillItem.addUnsafeEnchantment(Enchantment.LURE, 100);
-        assert itemMeta != null;
-        itemMeta.setDisplayName(Utils.Colorize(" "));
-        itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        fillItem.setItemMeta(itemMeta);
-
-        //dummy items
-        for (int i = 0; i < rowSize; i++) {
-            for (int j = 0; j < columnSize; j++) {
-                int itemIndex = i * columnSize + j;
-                if (i == 0 || i == rowSize - 1 || j == 0 || j == columnSize - 1) {
-                    fillItem.setType((itemIndex % 2 == 0) ? Material.BLACK_STAINED_GLASS_PANE : Material.WHITE_STAINED_GLASS_PANE);
-                    inventory.setItem(itemIndex, fillItem);
-                }
-            }
-        }
-    }*/
-
     public void saveQuest(Quest quest) {
         Main.questConfig.getConfig().set("quests." + quest.getId(), null);
-        Main.questConfig.getConfig().set("quests." + quest.getId() + ".name", quest.getName());
+        Main.questConfig.getConfig().set("quests." + quest.getId() + ".name", quest.getDisplayName());
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".displayItem", quest.getDisplayItem().getType().name());
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".questType", "QUEST_TYPE");
         Main.questConfig.getConfig().set("quests." + quest.getId() + ".objective", null);
@@ -126,13 +92,17 @@ public class QuestManager {
             int delay = config.getInt("quests." + id + ".delay");
             List<String> description = config.getStringList("quests." + id + ".description");
             String itemName = config.getString("quests." + id + ".displayItem");
-
-            assert itemName != null;
-
-            Material display = Material.getMaterial(itemName.toUpperCase());
             HashMap<String, Objective> objectiveList = loadQuestObjectives(id);
 
-            assert display != null;
+            if(itemName == null || itemName.isEmpty()) {
+                throw new InvalidQuestConfigurationException("Invalid Material in this quest: "+id);
+            }
+
+            Material display = Material.getMaterial(itemName.toUpperCase());
+            if(display == null) {
+                throw new InvalidQuestConfigurationException("Invalid Material in this quest: "+id);
+            }
+
             ItemStack displayItem = new ItemStack(display);
 
             //temp quest
@@ -159,7 +129,6 @@ public class QuestManager {
             registerQuest(temp);
         }
 
-        //pages
         Main.questsPageManager.generatePagesOfQuests(allQuests);
     }
 
@@ -241,29 +210,5 @@ public class QuestManager {
             }
         }
         return null;
-    }
-
-    public int finishedObjectivesCount(Quest quest) {
-        int finishedObjectiveCount = 0;
-        for (Map.Entry<String, Objective> entry : quest.getObjectives().entrySet()) {
-            Objective obj = entry.getValue();
-            if (obj.isFinishedObjective()) {
-                finishedObjectiveCount++;
-            }
-        }
-        return finishedObjectiveCount;
-    }
-
-    public boolean hasObjectiveType(HashMap<String, Quest> quests, ObjectiveType objectiveType) {
-        for (Map.Entry<String, Quest> entry : quests.entrySet()) {
-            Quest quest = entry.getValue();
-            for (Map.Entry<String, Objective> objective : quest.getObjectives().entrySet()) {
-                ObjectiveType type = objective.getValue().getType();
-                if (type.equals(objectiveType)) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

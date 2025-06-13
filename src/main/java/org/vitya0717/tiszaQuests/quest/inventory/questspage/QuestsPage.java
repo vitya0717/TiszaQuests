@@ -1,6 +1,5 @@
 package org.vitya0717.tiszaQuests.quest.inventory.questspage;
 
-import org.bukkit.inventory.ItemStack;
 import org.vitya0717.tiszaQuests.main.Main;
 import org.vitya0717.tiszaQuests.quest.Quest;
 

@@ -5,6 +5,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.vitya0717.tiszaQuests.commands.QuestCommands;
 import org.vitya0717.tiszaQuests.configuration.CustomConfig;
+import org.vitya0717.tiszaQuests.configuration.player.PlayerConfig;
+import org.vitya0717.tiszaQuests.configuration.player.PlayerConfigManager;
 import org.vitya0717.tiszaQuests.listeners.inventory.ButtonClickListener;
 import org.vitya0717.tiszaQuests.listeners.inventory.InventoryListener;
 import org.vitya0717.tiszaQuests.listeners.PlayerJoinListener;
@@ -15,12 +17,16 @@ import org.vitya0717.tiszaQuests.quest.exceptions.InvalidQuestObjectiveConfigura
 import org.vitya0717.tiszaQuests.quest.inventory.QuestsPageManager;
 import org.vitya0717.tiszaQuests.quest.playerProfile.PlayerProfileManager;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public final class Main extends JavaPlugin {
 
     public static QuestManager questManager;
     public static QuestsPageManager questsPageManager;
     public static PlayerProfileManager profileManager;
     public static CustomConfig questConfig;
+    public static PlayerConfigManager playerConfigManager;
 
     public static Main instance;
 
@@ -37,8 +43,9 @@ public final class Main extends JavaPlugin {
         questManager = new QuestManager(instance);
         questsPageManager = new QuestsPageManager(instance);
         profileManager = new PlayerProfileManager(instance);
+        playerConfigManager = new PlayerConfigManager();
 
-        registerCommands(instance);
+        registerCommands();
         registerEvents(instance);
 
         getLogger().info("Loading quests...");
@@ -53,6 +60,7 @@ public final class Main extends JavaPlugin {
         getLogger().info("Loading online players profile...");
         for(Player online : Bukkit.getOnlinePlayers()) {
             profileManager.loadProfile(online.getUniqueId());
+
         }
         getLogger().info("Successfully loaded "+profileManager.allLoadedProfile.size()+" online profile.");
 
@@ -60,8 +68,8 @@ public final class Main extends JavaPlugin {
 
     }
 
-    private void registerCommands(Main instance) {
-        getCommand("quests").setExecutor(new QuestCommands(instance));
+    private void registerCommands() {
+        getCommand("quests").setExecutor(new QuestCommands());
     }
 
     private void registerEvents(Main instance) {

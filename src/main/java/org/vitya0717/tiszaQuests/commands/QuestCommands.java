@@ -15,12 +15,6 @@ import java.util.Arrays;
 
 public class QuestCommands implements CommandExecutor {
 
-    private Main instance;
-
-    public QuestCommands(Main instance) {
-        this.instance = instance;
-    }
-
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String s, String[] args) {
         if(args.length == 0) {

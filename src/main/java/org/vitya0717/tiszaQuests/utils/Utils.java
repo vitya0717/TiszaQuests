@@ -17,7 +17,7 @@ public class Utils {
         s = s.replace("%prefix%", Text.PREFIX);
 
         if (quest != null) {
-            s = s.replace("%quest_name%", quest.getName());
+            s = s.replace("%quest_name%", quest.getDisplayName());
             s = s.replace("%quest_delay_time_left_" + quest.getId() + "%", Colorize(LocalDateTime.now().toString()));
             for (String key : quest.getObjectives().keySet()) {
                 if (quest.getObjective(key) != null) {

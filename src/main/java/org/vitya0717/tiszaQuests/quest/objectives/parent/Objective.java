@@ -1,7 +1,11 @@
-package org.vitya0717.tiszaQuests.quest.objectives;
+package org.vitya0717.tiszaQuests.quest.objectives.parent;
 
 import org.bukkit.entity.Player;
 import org.vitya0717.tiszaQuests.quest.Quest;
+import org.vitya0717.tiszaQuests.quest.objectives.enums.ObjectiveType;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class Objective implements Cloneable {
 
@@ -59,5 +63,16 @@ public abstract class Objective implements Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
         }
+    }
+
+    public Map<String, Object> serialize() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("questId", this.questId);
+        data.put("objectiveId", this.objectiveId);
+        data.put("type",this.type);
+        data.put("displayName", this.displayName);
+        data.put("finishedObjective",this.finishedObjective);
+
+        return data;
     }
 }

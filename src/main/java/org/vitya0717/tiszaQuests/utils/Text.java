@@ -5,7 +5,7 @@ import org.bukkit.ChatColor;
 public class Text {
 
     public static final String PREFIX = ChatColor.translateAlternateColorCodes('&',"&8[&fTalpra, Fiatalok&8] »");
-    public static final String GUI_TITLE = "              &6&lKüldetések";
+    public static final String GUI_TITLE = "            &6&lKüldetések";
     public static final String OPEN_QUEST_MENU = "%prefix% &6Megnyitottad a küldetés választót.";
 
     public static final String QUEST_ID_EMPTY = "%prefix% &cAdj meg egy egyedi küldetés ID-t(pl: quest1)";

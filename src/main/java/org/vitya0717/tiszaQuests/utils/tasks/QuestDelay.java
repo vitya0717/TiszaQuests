@@ -30,6 +30,8 @@ public class QuestDelay extends BukkitRunnable {
             playerProfile.getCompletedQuestsIds().remove(quest.getId());
             playerProfile.getCompletedQuests().remove(quest.getId());
             this.cancel();
+            playerProfile.setQuestInventoryNeedsUpdate(true);
         }
+        quest.setUpdateRequired(true);
     }
 }

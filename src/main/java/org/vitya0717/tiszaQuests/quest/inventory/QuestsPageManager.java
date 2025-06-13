@@ -1,6 +1,5 @@
 package org.vitya0717.tiszaQuests.quest.inventory;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -56,11 +55,14 @@ public class QuestsPageManager {
 
             if (itemUpdate == null || inventory.getInventoryUpdateTask() == null) {
                 itemUpdate = new QuestInventoryTask(instance, inventory);
-                inventory.setInventoryUpdateTask(itemUpdate.runTaskTimer(instance, 0, 15));
+                inventory.setInventoryUpdateTask(itemUpdate.runTaskTimer(instance, 0, 20));
             }
 
-            fillUpQuestInventory(inventory.getInventory(), profile);
-
+            if(profile.isFirstQuestMenuOpen()) {
+                buildQuestInventory(inventory.getInventory(), profile);
+            } else {
+                fillUpQuestInventory(inventory.getInventory(), profile);
+            }
             player.openInventory(inventory.getInventory());
             player.sendMessage(Utils.Colorize(Text.OPEN_QUEST_MENU));
         }
@@ -84,7 +86,11 @@ public class QuestsPageManager {
             }
 
             if (quest.getDisplayItem() == null) {
-                Main.instance.getLogger().warning("Quest" + quest.getName() + " display item was null");
+                Main.instance.getLogger().warning("Quest" + quest.getDisplayName() + " display item was null");
+            }
+
+            if(!quest.isUpdateRequired() && !profile.questInventoryNeedsUpdate()) {
+                continue;
             }
 
             ItemMeta meta = quest.getDisplayItem().getItemMeta();
@@ -95,8 +101,24 @@ public class QuestsPageManager {
 
             quest.getDisplayItem().setItemMeta(meta);
             inventory.setItem(quest.getItemSlot(), quest.getDisplayItem());
+            quest.setUpdateRequired(false);
         }
         fillPaginationButtons(inventory);
+        profile.setQuestInventoryNeedsUpdate(false);
+    }
+
+    private void buildQuestInventory(Inventory inventory, QuestPlayerProfile profile) {
+        QuestsPage page = getPage(profile.getCurrentPageOn());
+        for (Quest quest : page.getPageContents()) {
+            ItemMeta meta = quest.getDisplayItem().getItemMeta();
+
+            if (meta == null) continue;
+            List<String> lore = Utils.Placeholders(quest, quest.getDescription());
+            meta.setLore(lore);
+
+            quest.getDisplayItem().setItemMeta(meta);
+            inventory.setItem(quest.getItemSlot(), quest.getDisplayItem());
+        }
     }
 
     private void fillPaginationButtons(Inventory inventory) {
@@ -164,14 +186,18 @@ public class QuestsPageManager {
 
     public void goToNextPage(QuestPlayerProfile profile) {
         profile.setCurrentPageOn(profile.getCurrentPageOn() + 1);
+        profile.setQuestInventoryNeedsUpdate(true);
     }
 
     public void goToPreviousPage(QuestPlayerProfile profile) {
         profile.setCurrentPageOn(profile.getCurrentPageOn() - 1);
+        profile.setQuestInventoryNeedsUpdate(true);
     }
 
     public void updateQuestInventory(Inventory inventory, QuestPlayerProfile owner) {
-        inventory.clear();
+        if(owner.questInventoryNeedsUpdate()) {
+            inventory.clear();
+        }
         fillUpQuestInventory(inventory, owner);
     }
 

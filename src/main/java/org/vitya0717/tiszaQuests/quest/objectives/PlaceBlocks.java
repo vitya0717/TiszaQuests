@@ -3,8 +3,11 @@ package org.vitya0717.tiszaQuests.quest.objectives;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import org.vitya0717.tiszaQuests.configuration.player.PlayerConfig;
 import org.vitya0717.tiszaQuests.main.Main;
 import org.vitya0717.tiszaQuests.quest.Quest;
+import org.vitya0717.tiszaQuests.quest.objectives.enums.ObjectiveType;
+import org.vitya0717.tiszaQuests.quest.objectives.parent.Objective;
 import org.vitya0717.tiszaQuests.quest.playerProfile.QuestPlayerProfile;
 import org.vitya0717.tiszaQuests.utils.Utils;
 import org.vitya0717.tiszaQuests.utils.tasks.QuestDelay;
@@ -15,6 +18,9 @@ public class PlaceBlocks extends Objective implements Cloneable {
     private final Material blockType;
     private int requiredBlocksCount;
     private QuestDelay questDelay = null;
+    private QuestPlayerProfile profile;
+    private PlayerConfig playerConfig;
+
 
     public PlaceBlocks(String objectiveId, String questId, String displayName, Material blockType, ObjectiveType type, int requiredBlocksCount, int placedBlocksCount) {
         super(objectiveId, questId, displayName, type);
@@ -35,7 +41,12 @@ public class PlaceBlocks extends Objective implements Cloneable {
 
     @Override
     public void progress(String objectiveId, String questId, Player player) {
-        QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
+        if(profile == null) {
+            profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
+        }
+        if(playerConfig == null) {
+            playerConfig = Main.playerConfigManager.findPlayerConfig(profile.getPlayerUUID());
+        }
 
         Quest quest = profile.findActiveQuestByQuestId(questId);
         PlaceBlocks placeObjective = (PlaceBlocks) quest.getObjective(objectiveId);
@@ -47,6 +58,10 @@ public class PlaceBlocks extends Objective implements Cloneable {
         }
 
         player.sendMessage(Utils.Placeholders(quest, "%prefix% | &6"+"%quest_objective_display_name_"+objectiveId+"%"+" &8| &a%quest_placed_blocks_"+objectiveId+"%&7/&a%quest_required_placed_blocks_"+objectiveId+"%"));
+
+        quest.setUpdateRequired(true);
+
+        playerConfig.setChanged(true);
 
     }
 
@@ -65,31 +80,31 @@ public class PlaceBlocks extends Objective implements Cloneable {
 
         player.sendMessage(Utils.Placeholders(quest, "%prefix% &aSikeresen teljesítetted a "+"%quest_objective_display_name_"+objectiveId+"%"+" objectivet !"));
 
-        if(quest.getObjectives().size() != Main.questManager.finishedObjectivesCount(quest)) {
+        if(quest.getObjectives().size() != quest.finishedObjectives().size()) {
             return;
         }
-
         finishQuest(quest, player);
     }
 
     @Override
     public void finishQuest(Quest quest, Player player) {
         QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
+        PlayerConfig playerConfig = Main.playerConfigManager.findPlayerConfig(profile.getPlayerUUID());
 
         profile.getActiveQuests().remove(quest.getId());
         profile.getActiveQuestIds().remove(quest.getId());
 
-
         profile.getCompletedQuests().put(quest.getId(), quest);
         profile.getCompletedQuestsIds().add(quest.getId());
 
-        player.sendMessage( Utils.Placeholders(quest, "&aSikeresen teljesitetted a kuldetest: "+quest.getName()));
+        player.sendMessage( Utils.Placeholders(quest, "&aSikeresen teljesitetted a kuldetest: "+quest.getDisplayName()));
 
         if(questDelay == null) {
             questDelay = new QuestDelay(Main.instance, quest, player.getUniqueId());
         }
         BukkitTask questDelayTask = questDelay.runTaskTimer(Main.instance, 0, 20);
-        profile.getDelayedQuests().put(quest.getId(), questDelayTask);
+        profile.getQuestDelays().put(quest.getId(), questDelayTask);
+        playerConfig.setChanged(true);
     }
 
     public int getPlacedBlocksCount() {

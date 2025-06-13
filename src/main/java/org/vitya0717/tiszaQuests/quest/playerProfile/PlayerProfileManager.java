@@ -29,4 +29,7 @@ public class PlayerProfileManager {
 
     }
 
+    public Main getInstance() {
+        return instance;
+    }
 }
