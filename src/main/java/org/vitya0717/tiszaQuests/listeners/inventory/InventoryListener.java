@@ -68,9 +68,9 @@ public class InventoryListener implements Listener {
     public void onInventoryClose(InventoryCloseEvent event) {
         Player player = (Player) event.getPlayer();
 
-        QuestInventory inv = Main.questManager.questInventories.get(player.getUniqueId());
+        QuestInventory inv = Main.questsPageManager.questInventories.get(player.getUniqueId());
 
-        if (inv != null && event.getView().getTitle().equals(inv.getTitle()) && !inv.getInventoryUpdateTask().isCancelled()) {
+        if (inv != null && event.getView().getTitle().equals(inv.getTitle()) && inv.getInventoryUpdateTask() != null && !inv.getInventoryUpdateTask().isCancelled()) {
             Bukkit.getLogger().info("Quest inventory update paused");
             inv.getInventoryUpdateTask().cancel();
             inv.setInventoryUpdateTask(null);

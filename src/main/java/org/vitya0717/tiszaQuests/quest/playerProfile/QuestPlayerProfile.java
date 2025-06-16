@@ -8,7 +8,7 @@ import java.util.*;
 
 public class QuestPlayerProfile implements Serializable {
 
-    private UUID playerUUID;
+    private final UUID playerUUID;
     private int questPoints;
     private int currentPageOn = 1;
 
@@ -28,9 +28,7 @@ public class QuestPlayerProfile implements Serializable {
         this.questPoints = 0;
     }
 
-    public int getQuestPoints() {
-        return questPoints;
-    }
+    public int getQuestPoints() {return questPoints;}
 
     public void setQuestPoints(int questPoints) {
         this.questPoints = questPoints;
@@ -38,10 +36,6 @@ public class QuestPlayerProfile implements Serializable {
 
     public UUID getPlayerUUID() {
         return playerUUID;
-    }
-
-    public void setPlayerUUID(UUID playerUUID) {
-        this.playerUUID = playerUUID;
     }
 
     public HashMap<String, Quest> getActiveQuests() {
@@ -55,6 +49,30 @@ public class QuestPlayerProfile implements Serializable {
     public Set<String> getActiveQuestIds() {
         return activeQuestIds;
     }
+
+    public HashMap<String, BukkitTask> getQuestDelays() {return questDelays;}
+
+    public Set<String> getCompletedQuestsIds() {
+        return completedQuestsIds;
+    }
+
+    public int getCurrentPageOn() {
+        return currentPageOn;
+    }
+
+    public void setCurrentPageOn(int currentPage) {
+        this.currentPageOn = currentPage;
+    }
+
+    public boolean isFirstQuestMenuOpen() {return isFirstQuestMenuOpen;}
+
+    public void setFirstQuestMenuOpen(boolean firstQuestMenuOpen) {
+        isFirstQuestMenuOpen = firstQuestMenuOpen;
+    }
+
+    public boolean questInventoryNeedsUpdate() {return questInventoryNeedsUpdate;}
+
+    public void setQuestInventoryNeedsUpdate(boolean questInventoryNeedsUpdate) {this.questInventoryNeedsUpdate = questInventoryNeedsUpdate;}
 
     @Override
     public String toString() {
@@ -73,38 +91,6 @@ public class QuestPlayerProfile implements Serializable {
             }
         }
         return null;
-    }
-
-    public HashMap<String, BukkitTask> getQuestDelays() {
-        return questDelays;
-    }
-
-    public Set<String> getCompletedQuestsIds() {
-        return completedQuestsIds;
-    }
-
-    public int getCurrentPageOn() {
-        return currentPageOn;
-    }
-
-    public void setCurrentPageOn(int currentPage) {
-        this.currentPageOn = currentPage;
-    }
-
-    public boolean isFirstQuestMenuOpen() {
-        return isFirstQuestMenuOpen;
-    }
-
-    public void setFirstQuestMenuOpen(boolean firstQuestMenuOpen) {
-        isFirstQuestMenuOpen = firstQuestMenuOpen;
-    }
-
-    public boolean questInventoryNeedsUpdate() {
-        return questInventoryNeedsUpdate;
-    }
-
-    public void setQuestInventoryNeedsUpdate(boolean questInventoryNeedsUpdate) {
-        this.questInventoryNeedsUpdate = questInventoryNeedsUpdate;
     }
 
     public Map<String, Object> serialize() {

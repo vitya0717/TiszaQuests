@@ -4,6 +4,7 @@ import org.bukkit.inventory.ItemStack;
 import org.vitya0717.tiszaQuests.quest.objectives.parent.Objective;
 import org.vitya0717.tiszaQuests.quest.objectives.enums.ObjectiveType;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,16 +17,20 @@ public class Quest implements Cloneable {
     private String displayName;
     private List<String> description;
     private ItemStack displayItem;
-    private HashMap<String, Objective> objectives;
+    private HashMap<String, Objective> objectives  = new HashMap<>();
     private List<String> rewards;
     private boolean repeatable;
     private boolean active;
     private boolean updateRequired = true;
     private int questItemSlotNumber;
-    private int questDelay;
+    private LocalDateTime questDelay;
+    private boolean finished = false;
+
+    //delay in seconds for just description
+    private int questBaseDelay;
 
 
-    public Quest(String id, String displayName, ItemStack displayItem, int questItemSlotNumber, int questDelay) {
+    public Quest(String id, String displayName, ItemStack displayItem, int questItemSlotNumber, int questBaseDelay) {
         this.id = id;
         this.displayName = displayName;
         this.displayItem = displayItem;
@@ -33,7 +38,7 @@ public class Quest implements Cloneable {
         this.repeatable = true;
         this.active = true;
         this.questItemSlotNumber = questItemSlotNumber;
-        this.questDelay = questDelay;
+        this.questBaseDelay = questBaseDelay;
     }
 
     public String getId() {
@@ -103,11 +108,11 @@ public class Quest implements Cloneable {
     }
 
 
-    public int getQuestDelay() {
+    public LocalDateTime getQuestDelay() {
         return questDelay;
     }
 
-    public void setQuestDelay(int questDelay) {
+    public void setQuestDelay(LocalDateTime questDelay) {
         this.questDelay = questDelay;
     }
 
@@ -212,5 +217,21 @@ public class Quest implements Cloneable {
             }
         }
         return serializedObjectives;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public void setFinished(boolean finished) {
+        this.finished = finished;
+    }
+
+    public int getQuestBaseDelay() {
+        return questBaseDelay;
+    }
+
+    public void setQuestBaseDelay(int questBaseDelay) {
+        this.questBaseDelay = questBaseDelay;
     }
 }

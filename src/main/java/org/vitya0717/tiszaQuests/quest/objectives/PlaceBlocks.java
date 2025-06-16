@@ -1,5 +1,6 @@
 package org.vitya0717.tiszaQuests.quest.objectives;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
@@ -12,6 +13,9 @@ import org.vitya0717.tiszaQuests.quest.playerProfile.QuestPlayerProfile;
 import org.vitya0717.tiszaQuests.utils.Utils;
 import org.vitya0717.tiszaQuests.utils.tasks.QuestDelay;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 public class PlaceBlocks extends Objective implements Cloneable {
 
     private int placedBlocksCount;
@@ -20,6 +24,8 @@ public class PlaceBlocks extends Objective implements Cloneable {
     private QuestDelay questDelay = null;
     private QuestPlayerProfile profile;
     private PlayerConfig playerConfig;
+    private String confPath;
+    private String objPath;
 
 
     public PlaceBlocks(String objectiveId, String questId, String displayName, Material blockType, ObjectiveType type, int requiredBlocksCount, int placedBlocksCount) {
@@ -41,10 +47,12 @@ public class PlaceBlocks extends Objective implements Cloneable {
 
     @Override
     public void progress(String objectiveId, String questId, Player player) {
-        if(profile == null) {
+        if (profile == null) {
             profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
+            confPath = profile.getPlayerUUID().toString() + ".";
+            objPath = "Quests." + questId + ".ObjectivesProgress" + "." + objectiveId;
         }
-        if(playerConfig == null) {
+        if (playerConfig == null || playerConfig.getConfig() == null) {
             playerConfig = Main.playerConfigManager.findPlayerConfig(profile.getPlayerUUID());
         }
 
@@ -52,16 +60,16 @@ public class PlaceBlocks extends Objective implements Cloneable {
         PlaceBlocks placeObjective = (PlaceBlocks) quest.getObjective(objectiveId);
         placeObjective.increasePlacedBlocksCount(1);
 
-        if(placeObjective.getRequiredBlocksCount() == placeObjective.getPlacedBlocksCount()) {
-            finishObjective(objectiveId,quest.getId(), player);
+        SetPlayerConfig(placeObjective, playerConfig, confPath, objPath);
+
+        if (placeObjective.getRequiredBlocksCount() == placeObjective.getPlacedBlocksCount()) {
+            finishObjective(objectiveId, quest.getId(), player);
             return;
         }
 
-        player.sendMessage(Utils.Placeholders(quest, "%prefix% | &6"+"%quest_objective_display_name_"+objectiveId+"%"+" &8| &a%quest_placed_blocks_"+objectiveId+"%&7/&a%quest_required_placed_blocks_"+objectiveId+"%"));
+        player.sendMessage(Utils.Placeholders(quest, "%prefix% | &6" + "%quest_objective_display_name_" + objectiveId + "%" + " &8| &a%quest_placed_blocks_" + objectiveId + "%&7/&a%quest_required_placed_blocks_" + objectiveId + "%"));
 
         quest.setUpdateRequired(true);
-
-        playerConfig.setChanged(true);
 
     }
 
@@ -78,11 +86,12 @@ public class PlaceBlocks extends Objective implements Cloneable {
 
         quest.getObjective(objectiveId).finishObjective(true);
 
-        player.sendMessage(Utils.Placeholders(quest, "%prefix% &aSikeresen teljesítetted a "+"%quest_objective_display_name_"+objectiveId+"%"+" objectivet !"));
+        player.sendMessage(Utils.Placeholders(quest, "%prefix% &aSikeresen teljesítetted a " + "%quest_objective_display_name_" + objectiveId + "%" + " objectivet !"));
 
-        if(quest.getObjectives().size() != quest.finishedObjectives().size()) {
+        if (quest.getObjectives().size() != quest.finishedObjectives().size()) {
             return;
         }
+
         finishQuest(quest, player);
     }
 
@@ -97,14 +106,27 @@ public class PlaceBlocks extends Objective implements Cloneable {
         profile.getCompletedQuests().put(quest.getId(), quest);
         profile.getCompletedQuestsIds().add(quest.getId());
 
-        player.sendMessage( Utils.Placeholders(quest, "&aSikeresen teljesitetted a kuldetest: "+quest.getDisplayName()));
+        player.sendMessage(Utils.Placeholders(quest, "&aSikeresen teljesitetted a kuldetest: " + quest.getDisplayName()));
 
-        if(questDelay == null) {
+        if (questDelay == null) {
             questDelay = new QuestDelay(Main.instance, quest, player.getUniqueId());
         }
+        //add delay
+        LocalDateTime delayDate = LocalDateTime.now().plusSeconds(quest.getQuestBaseDelay());
+
+        quest.setQuestDelay(delayDate);
+        playerConfig.getConfig().set(confPath + objPath + ".Delay", delayDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
         BukkitTask questDelayTask = questDelay.runTaskTimer(Main.instance, 0, 20);
         profile.getQuestDelays().put(quest.getId(), questDelayTask);
+        quest.setFinished(true);
         playerConfig.setChanged(true);
+    }
+
+    private void SetPlayerConfig(PlaceBlocks obj, PlayerConfig config, String confPath, String objPath) {
+        config.set(confPath + objPath, "");
+        config.set(confPath + objPath + ".PlacedBlocks", obj.getPlacedBlocksCount());
+        config.setChanged(true);
     }
 
     public int getPlacedBlocksCount() {
@@ -134,5 +156,13 @@ public class PlaceBlocks extends Objective implements Cloneable {
 
     public void setQuestDelay(QuestDelay questDelay) {
         this.questDelay = questDelay;
+    }
+
+    public PlayerConfig getPlayerConfig() {
+        return playerConfig;
+    }
+
+    public void setPlayerConfig(PlayerConfig playerConfig) {
+        this.playerConfig = playerConfig;
     }
 }

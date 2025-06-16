@@ -29,7 +29,6 @@ public class QuestManager {
     public final LinkedHashMap<String, Quest> allQuests = new LinkedHashMap<>();
     public QuestInventoryTask itemUpdate = null;
 
-    public final HashMap<UUID, QuestInventory> questInventories = new HashMap<>();
     public String questInventoryTitle = Utils.Colorize(Text.GUI_TITLE);
 
     private final ConfigurationSection configurationSection = Main.questConfig.getConfig().getConfigurationSection("quests");

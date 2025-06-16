@@ -12,12 +12,14 @@ public class PlayerQuitListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-
         PlayerConfig config = Main.playerConfigManager.findPlayerConfig(player.getUniqueId());
 
         if(config.changed()) {
             config.saveConfig();
             config.setChanged(false);
         }
+
+        Main.playerConfigManager.unregisterPlayerConfig(player.getUniqueId());
+        Main.profileManager.unregisterPlayer(player.getUniqueId());
     }
 }

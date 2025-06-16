@@ -5,8 +5,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.vitya0717.tiszaQuests.commands.QuestCommands;
 import org.vitya0717.tiszaQuests.configuration.CustomConfig;
+import org.vitya0717.tiszaQuests.configuration.exceptions.PlayerConfigurationExistsException;
 import org.vitya0717.tiszaQuests.configuration.player.PlayerConfig;
 import org.vitya0717.tiszaQuests.configuration.player.PlayerConfigManager;
+import org.vitya0717.tiszaQuests.listeners.PlayerQuitListener;
 import org.vitya0717.tiszaQuests.listeners.inventory.ButtonClickListener;
 import org.vitya0717.tiszaQuests.listeners.inventory.InventoryListener;
 import org.vitya0717.tiszaQuests.listeners.PlayerJoinListener;
@@ -59,11 +61,14 @@ public final class Main extends JavaPlugin {
 
         getLogger().info("Loading online players profile...");
         for(Player online : Bukkit.getOnlinePlayers()) {
+            try {
+                playerConfigManager.registerPlayerConfiguration(online.getUniqueId());
+            } catch (PlayerConfigurationExistsException e) {
+                getLogger().severe(e.getMessage());
+            }
             profileManager.loadProfile(online.getUniqueId());
-
         }
         getLogger().info("Successfully loaded "+profileManager.allLoadedProfile.size()+" online profile.");
-
         getLogger().info("The quest plugin enabled on this server!");
 
     }
@@ -77,6 +82,7 @@ public final class Main extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new ButtonClickListener(), instance);
         Bukkit.getPluginManager().registerEvents(new BlockPlaceListener(), instance);
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), instance);
+        Bukkit.getPluginManager().registerEvents(new PlayerQuitListener(), instance);
     }
 
     @Override

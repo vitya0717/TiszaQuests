@@ -1,5 +1,6 @@
 package org.vitya0717.tiszaQuests.utils.tasks;
 
+import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.vitya0717.tiszaQuests.main.Main;
 import org.vitya0717.tiszaQuests.quest.inventory.QuestInventory;

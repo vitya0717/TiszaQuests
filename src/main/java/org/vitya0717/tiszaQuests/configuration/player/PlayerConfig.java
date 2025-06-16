@@ -21,26 +21,32 @@ public class PlayerConfig implements IPlayerConfiguration{
     private final UUID playerUuid;
     private final Logger logger = Bukkit.getLogger();
     private boolean isChanged = false;
+    private final String confPath;
 
     public PlayerConfig(UUID uuid) {
         this.playerUuid = uuid;
+        this.confPath = playerUuid.toString()+".";
     }
 
     @Override
     public void saveDefaultConfig(UUID playerUuid) {
         try {
-            Main.playerConfigManager.registerPlayer(playerUuid);
 
-            file = new File(userDataPath+"userdata", playerUuid.toString()+".yml");
+           setFile(new File(userDataPath+"userdata", playerUuid.toString()+".yml"));
 
             if(!file.exists()) {
                 file.getParentFile().mkdirs();
                 file.createNewFile();
+
+                loadConfig();
+
+                fileConfiguration.set(confPath + "QuestPoints", 0);
+                fileConfiguration.set(confPath + "Quests", "");
+
+
+                return;
             }
             loadConfig();
-
-        } catch (PlayerConfigurationExistsException e) {
-            logger.severe(e.getMessage());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -51,17 +57,17 @@ public class PlayerConfig implements IPlayerConfiguration{
         try {
             fileConfiguration.save(file);
         } catch (IOException e) {
-            System.out.println(Utils.Colorize("Cannot save the player configuration!"));
+            Bukkit.getLogger().severe("Cannot save the player configuration!");
         }
     }
 
     @Override
     public void loadConfig() {
-        fileConfiguration = new YamlConfiguration();
+        setYaml(new YamlConfiguration());
         try {
             fileConfiguration.load(file);
         } catch (IOException | InvalidConfigurationException e) {
-            System.out.println(Utils.Colorize("Cannot load the player configuration!"));
+            Bukkit.getLogger().severe("Cannot load the player configuration!");
         }
     }
 
@@ -72,7 +78,22 @@ public class PlayerConfig implements IPlayerConfiguration{
 
     @Override
     public boolean changed() {
-        return false;
+        return isChanged;
+    }
+
+    @Override
+    public void setFile(File file) {
+        this.file = file;
+    }
+
+    @Override
+    public void setYaml(FileConfiguration yaml) {
+        this.fileConfiguration = yaml;
+    }
+
+    @Override
+    public void set(String path, Object value) {
+        this.getConfig().set(path, value);
     }
 
     public UUID getPlayerUuid() {
@@ -85,5 +106,17 @@ public class PlayerConfig implements IPlayerConfiguration{
 
     public void setChanged(boolean changed) {
         isChanged = changed;
+    }
+
+    @Override
+    public String toString() {
+        return "PlayerConfig{" +
+                "file=" + file +
+                ", fileConfiguration=" + fileConfiguration +
+                ", userDataPath='" + userDataPath + '\'' +
+                ", playerUuid=" + playerUuid +
+                ", isChanged=" + isChanged +
+                ", confPath='" + confPath + '\'' +
+                '}';
     }
 }

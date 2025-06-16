@@ -1,5 +1,6 @@
 package org.vitya0717.tiszaQuests.listeners.inventory;
 
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -69,12 +70,14 @@ public class ButtonClickListener implements Listener {
     private void goNextPage(QuestPlayerProfile profile) {
 
         if (profile == null) {
+            Bukkit.getLogger().info(String.valueOf(profile));
             return;
         }
         QuestsPage page = Main.questsPageManager.getPages().get(profile.getCurrentPageOn() + 1);
         if (page == null) {
             return;
         }
+
         Main.questsPageManager.goToNextPage(profile);
     }
 

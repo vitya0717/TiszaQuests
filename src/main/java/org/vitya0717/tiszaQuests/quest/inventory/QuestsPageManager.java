@@ -1,5 +1,6 @@
 package org.vitya0717.tiszaQuests.quest.inventory;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -22,8 +23,11 @@ public class QuestsPageManager {
 
     private final Main instance;
     private final Queue<Integer> pageBuffer = new ArrayDeque<>();
-    public QuestInventoryTask itemUpdate = null;
+    public QuestInventoryTask inventoryItemUpdater = null;
     private final HashMap<Integer, QuestsPage> pages = new HashMap<>();
+    public final HashMap<UUID, QuestInventory> questInventories = new HashMap<>();
+    public final static int rowSize = 6;
+    public final static int columnSize = 9;
 
     private ItemStack nextPageButton = null;
     private ItemStack backPageButton = null;
@@ -34,38 +38,46 @@ public class QuestsPageManager {
     }
 
     public void openQuestMenu(Player player) {
-
-        int rowSize = 6;
-        int columnSize = 9;
-
         if (player != null) {
 
             QuestPlayerProfile profile = Main.profileManager.allLoadedProfile.get(player.getUniqueId());
-            QuestInventory inventory = Main.questManager.questInventories.get(player.getUniqueId());
+            QuestInventory inventory = questInventories.get(player.getUniqueId());
 
             //create quest inventory without pagination
             if (inventory == null) {
-
-                inventory = new QuestInventory(instance);
-                inventory.buildInventory(rowSize, columnSize, Main.questManager.questInventoryTitle);
-                inventory.setQuestPlayerProfile(profile);
-
-            }
-            Main.questManager.questInventories.put(player.getUniqueId(), inventory);
-
-            if (itemUpdate == null || inventory.getInventoryUpdateTask() == null) {
-                itemUpdate = new QuestInventoryTask(instance, inventory);
-                inventory.setInventoryUpdateTask(itemUpdate.runTaskTimer(instance, 0, 20));
+                Bukkit.getLogger().info("null volt");
+                inventory = registerQuestInventory(profile);
             }
 
-            if(profile.isFirstQuestMenuOpen()) {
+            if (inventoryItemUpdater == null || inventory.getInventoryUpdateTask() == null) {
+                inventoryItemUpdater = new QuestInventoryTask(instance, inventory);
+                inventory.setInventoryUpdateTask(inventoryItemUpdater.runTaskTimer(instance, 0, 20));
+            }
+
+            if (profile.isFirstQuestMenuOpen()) {
                 buildQuestInventory(inventory.getInventory(), profile);
+                Bukkit.getLogger().info("elso");
             } else {
                 fillUpQuestInventory(inventory.getInventory(), profile);
+                Bukkit.getLogger().info("nem elso");
             }
+
             player.openInventory(inventory.getInventory());
             player.sendMessage(Utils.Colorize(Text.OPEN_QUEST_MENU));
         }
+    }
+
+    public QuestInventory registerQuestInventory(QuestPlayerProfile profile) {
+        QuestInventory inventory = null;
+        inventory = new QuestInventory(instance);
+        inventory.buildInventory(rowSize, columnSize, Main.questManager.questInventoryTitle);
+        inventory.setQuestPlayerProfile(profile);
+
+        questInventories.put(profile.getPlayerUUID(), inventory);
+
+        profile.setQuestInventoryNeedsUpdate(true);
+
+        return inventory;
     }
 
     private void fillUpQuestInventory(Inventory inventory, QuestPlayerProfile profile) {
@@ -78,7 +90,10 @@ public class QuestsPageManager {
             Quest completedQuest = Main.questManager.findQuestInCompletedPlayersQuests(profile.getPlayerUUID(), quest.getId());
 
             if (playerQuest != null) {
+                Bukkit.getLogger().info("van: "+quest.getId());
+                Bukkit.getLogger().info(playerQuest.getObjective("1").toString());
                 quest = playerQuest;
+                Bukkit.getLogger().info(quest.getObjective("1").toString());
             }
 
             if (completedQuest != null) {
@@ -86,43 +101,44 @@ public class QuestsPageManager {
             }
 
             if (quest.getDisplayItem() == null) {
-                Main.instance.getLogger().warning("Quest" + quest.getDisplayName() + " display item was null");
+                Main.instance.getLogger().severe("Quest" + quest.getId() + " display item was null.");
             }
 
             if(!quest.isUpdateRequired() && !profile.questInventoryNeedsUpdate()) {
                 continue;
             }
 
-            ItemMeta meta = quest.getDisplayItem().getItemMeta();
+            setQuestDisplayItem(quest, inventory);
 
-            if (meta == null) continue;
-            List<String> lore = Utils.Placeholders(quest, quest.getDescription());
-            meta.setLore(lore);
-
-            quest.getDisplayItem().setItemMeta(meta);
-            inventory.setItem(quest.getItemSlot(), quest.getDisplayItem());
+            //turn off quest update request
             quest.setUpdateRequired(false);
         }
         fillPaginationButtons(inventory);
+
+        //turn off page update request
         profile.setQuestInventoryNeedsUpdate(false);
     }
 
     private void buildQuestInventory(Inventory inventory, QuestPlayerProfile profile) {
         QuestsPage page = getPage(profile.getCurrentPageOn());
         for (Quest quest : page.getPageContents()) {
-            ItemMeta meta = quest.getDisplayItem().getItemMeta();
-
-            if (meta == null) continue;
-            List<String> lore = Utils.Placeholders(quest, quest.getDescription());
-            meta.setLore(lore);
-
-            quest.getDisplayItem().setItemMeta(meta);
-            inventory.setItem(quest.getItemSlot(), quest.getDisplayItem());
+            setQuestDisplayItem(quest, inventory);
         }
+        profile.setFirstQuestMenuOpen(false);
+    }
+
+    public void setQuestDisplayItem(Quest quest, Inventory inventory) {
+        ItemMeta meta = quest.getDisplayItem().getItemMeta();
+
+        List<String> lore = Utils.Placeholders(quest, quest.getDescription());
+        meta.setLore(lore);
+
+        quest.getDisplayItem().setItemMeta(meta);
+        inventory.setItem(quest.getItemSlot(), quest.getDisplayItem());
     }
 
     private void fillPaginationButtons(Inventory inventory) {
-        if(nextPageButton == null) {
+        if (nextPageButton == null) {
             nextPageButton = new ItemStack(Material.PAPER);
             ItemMeta nextPageButtonMeta = nextPageButton.getItemMeta();
             nextPageButtonMeta.setDisplayName("next page ");
@@ -134,7 +150,7 @@ public class QuestsPageManager {
         }
         inventory.setItem(53, nextPageButton);
 
-        if(backPageButton == null) {
+        if (backPageButton == null) {
             backPageButton = new ItemStack(Material.PAPER);
             ItemMeta backPageButtonMeta = nextPageButton.getItemMeta();
             backPageButtonMeta.setDisplayName("back");
@@ -155,6 +171,7 @@ public class QuestsPageManager {
         int maxContentPerPage = 18;
 
         QuestsPage questsPage = new QuestsPage(instance);
+
         questsPage.setMaxPageContents(maxContentPerPage);
 
         for (Map.Entry<String, Quest> entry : allQuests.entrySet()) {
@@ -172,7 +189,6 @@ public class QuestsPageManager {
                 questCount = 0;
 
                 if (currentQuestCount != 0) {
-
                     questsPage = new QuestsPage(instance);
                     questsPage.setMaxPageContents(maxContentPerPage);
                 }
@@ -195,7 +211,7 @@ public class QuestsPageManager {
     }
 
     public void updateQuestInventory(Inventory inventory, QuestPlayerProfile owner) {
-        if(owner.questInventoryNeedsUpdate()) {
+        if (owner.questInventoryNeedsUpdate()) {
             inventory.clear();
         }
         fillUpQuestInventory(inventory, owner);
@@ -210,6 +226,6 @@ public class QuestsPageManager {
     }
 
     public void addPage(QuestsPage questsPage) {
-        pages.put(pages.size()+1, questsPage);
+        pages.put(pages.size() + 1, questsPage);
     }
 }
